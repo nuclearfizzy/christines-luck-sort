@@ -762,6 +762,172 @@ body {
   min-height: 82px;
 }
 
+/* ---- Brand as a button (click to return to menu) -------------------------- */
+.brand--button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+}
+
+/* ---- Mode-select menu ----------------------------------------------------- */
+.stage--menu {
+  justify-content: center;
+}
+
+.menu__title {
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.menu__modes {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  width: min(880px, 94%);
+}
+
+.mode-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 28px 20px 24px;
+  border-radius: 20px;
+  cursor: pointer;
+  font: inherit;
+  color: var(--text);
+  text-align: center;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  transition: background 0.18s, border-color 0.18s;
+}
+
+.mode-card:hover {
+  background: var(--panel-strong);
+  border-color: var(--accent);
+}
+
+.mode-card__icon {
+  font-size: 44px;
+}
+
+.mode-card__name {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.mode-card__desc {
+  font-size: 14px;
+  opacity: 0.85;
+  line-height: 1.4;
+}
+
+.mode-card__tag {
+  margin-top: 4px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--card-ink);
+  background: var(--accent);
+  padding: 3px 12px;
+  border-radius: 999px;
+}
+
+/* ---- In-game mode banner -------------------------------------------------- */
+.mode-banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+  font-weight: 700;
+  padding: 6px 16px;
+  border-radius: 999px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+}
+
+.mode-banner__date {
+  font-weight: 400;
+  opacity: 0.75;
+}
+
+/* ---- Hint chip (Hint Mode) ------------------------------------------------ */
+.deck-area {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.hint-chip {
+  font-size: 15px;
+  padding: 8px 18px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--panel-strong);
+}
+
+.hint-chip strong {
+  margin-left: 4px;
+}
+
+.hint-chip--red strong {
+  color: var(--card-red);
+}
+
+.hint-chip--black strong {
+  color: var(--text);
+}
+
+/* ---- Daily panel & practice note ------------------------------------------ */
+.daily-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  width: min(560px, 92%);
+  padding: 16px 22px;
+  border-radius: 18px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+}
+
+.daily-panel__row {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  gap: 12px;
+  font-size: 15px;
+}
+
+.daily-panel__best {
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.practice-note {
+  font-size: 14px;
+  opacity: 0.85;
+  text-align: center;
+  max-width: 480px;
+}
+
+.scoreboard__badge--muted {
+  background: var(--panel-strong);
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+
+/* ---- Result action buttons ------------------------------------------------ */
+.result-actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
 /* Tidy scrollbar. */
 ::-webkit-scrollbar {
   width: 10px;

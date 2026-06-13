@@ -16,6 +16,12 @@ Sort a freshly shuffled 52-card deck into four suit piles — **without ever pee
 
 You can also use your keyboard: **1** = Spades, **2** = Hearts, **3** = Diamonds, **4** = Clubs.
 
+## Game modes
+
+- **🍀 Classic** — pure luck. Sort the deck blind and build your win streak.
+- **👁️ Hint Mode** — see each card's colour (red/black) before placing it, for a 50/50 guess with real strategy. Practice only, so it doesn't affect your streak.
+- **📅 Daily Challenge** — everyone gets the *same* shuffled deck each day (it's seeded by the date), so you can compare scores with friends. Copy your result to share it!
+
 ## Running it on your computer
 
 You'll need [Node.js](https://nodejs.org) installed.
