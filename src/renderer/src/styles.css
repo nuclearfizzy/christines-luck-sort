@@ -1,0 +1,554 @@
+/* ===========================================================================
+   Christine's Luck Sort — look & feel
+   A cozy casino-felt theme with soft gold accents.
+   =========================================================================== */
+
+:root {
+  --felt-1: #0f5138;
+  --felt-2: #0a3526;
+  --gold: #e7c66b;
+  --gold-soft: #c9a84e;
+  --cream: #f6f1e3;
+  --ink: #15241d;
+  --red: #d6324a;
+  --shadow: rgba(0, 0, 0, 0.35);
+  --card-w: 120px;
+  --card-h: 168px;
+  --radius: 14px;
+  font-synthesis: none;
+  -webkit-font-smoothing: antialiased;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  color: var(--cream);
+  /* Radial felt with a subtle vignette toward the edges. */
+  background:
+    radial-gradient(circle at 50% 30%, var(--felt-1), var(--felt-2) 70%),
+    var(--felt-2);
+  overflow: hidden;
+  user-select: none;
+}
+
+.app {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+/* ---- Top bar -------------------------------------------------------------- */
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 28px;
+  border-bottom: 1px solid rgba(231, 198, 107, 0.18);
+  background: rgba(0, 0, 0, 0.12);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.brand__leaf {
+  font-size: 28px;
+  filter: drop-shadow(0 2px 4px var(--shadow));
+}
+
+.brand__title {
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: var(--gold);
+  text-shadow: 0 2px 6px var(--shadow);
+}
+
+.topbar__right {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.best {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  line-height: 1.1;
+}
+
+.best__label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  opacity: 0.6;
+}
+
+.best__value {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--gold);
+}
+
+/* ---- Buttons -------------------------------------------------------------- */
+.btn {
+  font: inherit;
+  font-weight: 600;
+  border: none;
+  border-radius: 999px;
+  padding: 10px 20px;
+  cursor: pointer;
+  transition: background 0.18s, box-shadow 0.18s, transform 0.05s;
+}
+
+.btn--ghost {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--cream);
+  border: 1px solid rgba(231, 198, 107, 0.35);
+}
+
+.btn--ghost:hover {
+  background: rgba(255, 255, 255, 0.16);
+}
+
+.btn--primary {
+  background: linear-gradient(180deg, #f0d488, var(--gold));
+  color: var(--ink);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.3);
+}
+
+.btn--primary:hover {
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.4);
+}
+
+.btn--big {
+  font-size: 18px;
+  padding: 14px 30px;
+}
+
+/* ---- Main stage ----------------------------------------------------------- */
+.stage {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 26px;
+  padding: 24px;
+  overflow-y: auto;
+}
+
+.hint {
+  font-size: 16px;
+  opacity: 0.85;
+  text-align: center;
+}
+
+/* ---- Progress ------------------------------------------------------------- */
+.progress {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: min(520px, 80%);
+}
+
+.progress__bar {
+  flex: 1;
+  height: 10px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+}
+
+.progress__fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--gold), #f0d488);
+}
+
+.progress__label {
+  font-size: 13px;
+  opacity: 0.8;
+  white-space: nowrap;
+  min-width: 96px;
+  text-align: right;
+}
+
+/* ---- Deck zone ------------------------------------------------------------ */
+.deck-zone {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: calc(var(--card-h) + 40px);
+}
+
+.deck-stack {
+  position: relative;
+  width: var(--card-w);
+  height: var(--card-h);
+}
+
+.deck-stack__shadow {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius);
+  background: #1d3a2e;
+  border: 1px solid rgba(0, 0, 0, 0.3);
+}
+
+.deck-stack__shadow--1 { transform: translate(4px, 4px); }
+.deck-stack__shadow--2 { transform: translate(8px, 8px); }
+.deck-stack__shadow--3 { transform: translate(12px, 12px); }
+
+.deck-stack__top {
+  position: absolute;
+  inset: 0;
+}
+
+.deck-stack__count {
+  position: absolute;
+  bottom: -30px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 13px;
+  opacity: 0.75;
+  white-space: nowrap;
+}
+
+.reveal-prompt {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+  font-size: 18px;
+}
+
+/* ---- A playing card ------------------------------------------------------- */
+.card {
+  width: var(--card-w);
+  height: var(--card-h);
+  perspective: 900px;
+}
+
+.card--small {
+  width: 58px;
+  height: 82px;
+}
+
+.card__inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transition: transform 0.4s;
+  transform-style: preserve-3d;
+}
+
+.card__inner.is-faceup {
+  transform: rotateY(180deg);
+}
+
+.card__face {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius);
+  backface-visibility: hidden;
+  box-shadow: 0 6px 16px var(--shadow);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.card--small .card__face {
+  border-radius: 8px;
+  box-shadow: 0 3px 8px var(--shadow);
+}
+
+/* Back of the card — a tidy diamond lattice. */
+.card__back {
+  background: linear-gradient(135deg, #7d1d2c, #a3263a);
+  border: 3px solid #f3e6c4;
+}
+
+.card__back-pattern {
+  position: absolute;
+  inset: 6px;
+  border-radius: 8px;
+  background-image:
+    repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.12) 0 6px, transparent 6px 12px),
+    repeating-linear-gradient(-45deg, rgba(255, 255, 255, 0.12) 0 6px, transparent 6px 12px);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+}
+
+/* Front of the card. */
+.card__front {
+  background: var(--cream);
+  color: var(--ink);
+  transform: rotateY(180deg);
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  flex-direction: column;
+  padding: 8px;
+}
+
+.card__front.is-red {
+  color: var(--red);
+}
+
+.card__corner {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 1;
+  font-weight: 700;
+}
+
+.card--small .card__corner {
+  font-size: 11px;
+}
+
+.card__corner--tl {
+  top: 7px;
+  left: 8px;
+}
+
+.card__corner--br {
+  bottom: 7px;
+  right: 8px;
+  transform: rotate(180deg);
+}
+
+.card__rank {
+  font-size: 20px;
+}
+
+.card--small .card__rank {
+  font-size: 12px;
+}
+
+.card__suit {
+  font-size: 16px;
+}
+
+.card--small .card__suit {
+  font-size: 10px;
+}
+
+.card__center {
+  font-size: 52px;
+}
+
+.card--small .card__center {
+  font-size: 26px;
+}
+
+/* Correct / wrong tinting after the reveal. */
+.card--correct .card__front {
+  box-shadow: 0 0 0 3px #43c97a, 0 6px 16px var(--shadow);
+}
+
+.card--wrong .card__front {
+  opacity: 0.6;
+  filter: grayscale(0.3);
+}
+
+/* ---- Suit piles (the drop buttons) ---------------------------------------- */
+.piles {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 18px;
+  width: min(760px, 92%);
+}
+
+.pile {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 20px 12px 16px;
+  border-radius: 18px;
+  cursor: pointer;
+  font: inherit;
+  color: var(--cream);
+  background: rgba(0, 0, 0, 0.22);
+  border: 2px dashed rgba(231, 198, 107, 0.45);
+  transition: background 0.18s, border-color 0.18s;
+}
+
+.pile:hover:not(:disabled) {
+  background: rgba(0, 0, 0, 0.34);
+  border-color: var(--gold);
+}
+
+.pile:disabled {
+  cursor: default;
+  opacity: 0.55;
+}
+
+.pile__symbol {
+  font-size: 40px;
+  line-height: 1;
+}
+
+.pile--red .pile__symbol {
+  color: #ff8a9b;
+}
+
+.pile--black .pile__symbol {
+  color: #eaeaea;
+}
+
+.pile__label {
+  font-size: 14px;
+  letter-spacing: 0.5px;
+  opacity: 0.9;
+}
+
+.pile__count {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--gold);
+}
+
+.pile__key {
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  font-size: 11px;
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 5px;
+  background: rgba(231, 198, 107, 0.18);
+  color: var(--gold);
+}
+
+/* ---- Results screen ------------------------------------------------------- */
+.stage--results {
+  justify-content: flex-start;
+  padding-top: 30px;
+}
+
+.scoreboard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 22px 40px;
+  border-radius: 22px;
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(231, 198, 107, 0.3);
+  text-align: center;
+}
+
+.scoreboard__emoji {
+  font-size: 46px;
+}
+
+.scoreboard__score {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.scoreboard__big {
+  font-size: 56px;
+  font-weight: 800;
+  color: var(--gold);
+  line-height: 1;
+}
+
+.scoreboard__total {
+  font-size: 18px;
+  opacity: 0.8;
+}
+
+.scoreboard__badge {
+  margin-top: 2px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--ink);
+  background: var(--gold);
+  padding: 3px 12px;
+  border-radius: 999px;
+}
+
+.scoreboard__verdict {
+  margin-top: 6px;
+  font-size: 16px;
+  max-width: 460px;
+  opacity: 0.92;
+}
+
+.result-piles {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  width: min(900px, 95%);
+}
+
+.result-pile {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 16px;
+  padding: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.result-pile__head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.result-pile__symbol {
+  font-size: 22px;
+}
+
+.result-pile--red .result-pile__symbol { color: #ff8a9b; }
+.result-pile--black .result-pile__symbol { color: #eaeaea; }
+
+.result-pile__label {
+  font-weight: 600;
+  flex: 1;
+}
+
+.result-pile__score {
+  font-size: 13px;
+  color: var(--gold);
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.result-pile__cards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  min-height: 82px;
+}
+
+/* Tidy scrollbar for the felt theme. */
+::-webkit-scrollbar {
+  width: 10px;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(231, 198, 107, 0.3);
+  border-radius: 999px;
+}

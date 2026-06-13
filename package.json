@@ -1,0 +1,25 @@
+{
+  "name": "christines-luck-sort",
+  "version": "1.0.0",
+  "description": "A blind card-sorting luck game — sort a shuffled deck into 4 suit piles without peeking!",
+  "main": "./out/main/index.js",
+  "author": "nuclearfizzy",
+  "license": "MIT",
+  "scripts": {
+    "dev": "electron-vite dev",
+    "build": "electron-vite build",
+    "preview": "electron-vite preview",
+    "start": "electron-vite preview"
+  },
+  "dependencies": {
+    "framer-motion": "^11.5.4",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.3.1",
+    "electron": "^31.3.1",
+    "electron-vite": "^2.3.0",
+    "vite": "^5.4.2"
+  }
+}

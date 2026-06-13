@@ -1,0 +1,11 @@
+# Dependencies (re-installable, never committed)
+node_modules/
+
+# Build output
+out/
+dist/
+
+# Logs & OS cruft
+*.log
+.DS_Store
+Thumbs.db
