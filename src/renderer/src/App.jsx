@@ -3,11 +3,34 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { SUITS, TOTAL_CARDS, createDeck, shuffle, scorePiles } from './game/deck'
 import Card from './components/Card'
 
-const BEST_KEY = 'cls-best-score' // where we remember your best score
+// localStorage keys — where we remember things between sessions.
+const BEST_KEY = 'cls-best-score'
+const STREAK_KEY = 'cls-current-streak'
+const BEST_STREAK_KEY = 'cls-best-streak'
+const HISTORY_KEY = 'cls-history'
+const THEME_KEY = 'cls-theme'
+
+const WIN_THRESHOLD = 14 // beating the ~13 average counts as a "win"
+const HISTORY_MAX = 12 // how many recent games to remember
 
 // Start every suit pile as an empty list.
 function emptyPiles() {
   return SUITS.reduce((acc, suit) => ({ ...acc, [suit.key]: [] }), {})
+}
+
+// Safely read a saved number (falls back to 0).
+function readNumber(key) {
+  return Number(localStorage.getItem(key)) || 0
+}
+
+// Safely read the saved history array.
+function readHistory() {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(HISTORY_KEY))
+    return Array.isArray(parsed) ? parsed : []
+  } catch {
+    return []
+  }
 }
 
 // A little encouraging message based on how lucky you were.
@@ -15,7 +38,7 @@ function verdict(score) {
   if (score === TOTAL_CARDS) return { emoji: '🤯', text: 'A FLAWLESS deck?! That should be statistically impossible. Are you a wizard?' }
   if (score >= 30) return { emoji: '🌟', text: 'Astonishing luck — the cards adore you!' }
   if (score >= 20) return { emoji: '🍀', text: 'Wonderfully lucky — well above average!' }
-  if (score >= 14) return { emoji: '✨', text: 'A touch better than average. Nicely done!' }
+  if (score >= WIN_THRESHOLD) return { emoji: '✨', text: 'A touch better than average. Nicely done!' }
   if (score >= 11) return { emoji: '🙂', text: 'Right around the expected average of 13. The math holds!' }
   if (score >= 6) return { emoji: '🎲', text: 'A little unlucky this round — give it another shuffle!' }
   return { emoji: '😅', text: 'Ouch! The deck was not on your side. Try again!' }
@@ -25,7 +48,25 @@ export default function App() {
   const [deck, setDeck] = useState([])
   const [piles, setPiles] = useState(emptyPiles())
   const [phase, setPhase] = useState('placing') // 'placing' | 'revealed'
-  const [bestScore, setBestScore] = useState(() => Number(localStorage.getItem(BEST_KEY)) || 0)
+
+  // Persisted stats.
+  const [bestScore, setBestScore] = useState(() => readNumber(BEST_KEY))
+  const [currentStreak, setCurrentStreak] = useState(() => readNumber(STREAK_KEY))
+  const [bestStreak, setBestStreak] = useState(() => readNumber(BEST_STREAK_KEY))
+  const [history, setHistory] = useState(() => readHistory())
+
+  // Theme ('dark' | 'light'), remembered between sessions.
+  const [theme, setTheme] = useState(() => localStorage.getItem(THEME_KEY) || 'dark')
+
+  // Apply the theme to <html> so the whole app re-skins, and save the choice.
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme)
+    localStorage.setItem(THEME_KEY, theme)
+  }, [theme])
+
+  const toggleTheme = useCallback(() => {
+    setTheme((prev) => (prev === 'dark' ? 'light' : 'dark'))
+  }, [])
 
   // Deal a brand-new shuffled deck.
   const newGame = useCallback(() => {
@@ -57,15 +98,28 @@ export default function App() {
   )
 
   const score = useMemo(() => scorePiles(piles), [piles])
+  const justWon = score >= WIN_THRESHOLD
 
+  // Reveal & record the round. Everything is computed once here (an event
+  // handler runs a single time), so streak/history can't double-count.
   const reveal = useCallback(() => {
+    const won = score >= WIN_THRESHOLD
+    const nextStreak = won ? currentStreak + 1 : 0
+    const nextBestStreak = Math.max(bestStreak, nextStreak)
+    const nextBest = Math.max(bestScore, score)
+    const nextHistory = [...history, { score, won }].slice(-HISTORY_MAX)
+
+    setBestScore(nextBest)
+    setCurrentStreak(nextStreak)
+    setBestStreak(nextBestStreak)
+    setHistory(nextHistory)
     setPhase('revealed')
-    setBestScore((prevBest) => {
-      const next = Math.max(prevBest, score)
-      localStorage.setItem(BEST_KEY, String(next))
-      return next
-    })
-  }, [score])
+
+    localStorage.setItem(BEST_KEY, String(nextBest))
+    localStorage.setItem(STREAK_KEY, String(nextStreak))
+    localStorage.setItem(BEST_STREAK_KEY, String(nextBestStreak))
+    localStorage.setItem(HISTORY_KEY, JSON.stringify(nextHistory))
+  }, [score, currentStreak, bestStreak, bestScore, history])
 
   // Keyboard shortcuts: 1–4 place cards, Enter reveals / plays again.
   useEffect(() => {
@@ -90,10 +144,26 @@ export default function App() {
           <h1 className="brand__title">Christine&rsquo;s Luck Sort</h1>
         </div>
         <div className="topbar__right">
-          <div className="best">
-            <span className="best__label">Best</span>
-            <span className="best__value">{bestScore}</span>
+          <div className="stat">
+            <span className="stat__label">Streak</span>
+            <span className="stat__value">{currentStreak > 0 ? `🔥 ${currentStreak}` : '—'}</span>
           </div>
+          <div className="stat">
+            <span className="stat__label">Best</span>
+            <span className="stat__value">{bestScore}</span>
+          </div>
+          <button
+            className="theme-toggle"
+            onClick={toggleTheme}
+            aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} theme`}
+            title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} theme`}
+          >
+            <span className="theme-toggle__track">
+              <span>🌙</span>
+              <span>☀️</span>
+            </span>
+            <span className="theme-toggle__thumb" />
+          </button>
           <button className="btn btn--ghost" onClick={newGame}>
             New Deck
           </button>
@@ -111,7 +181,8 @@ export default function App() {
             transition={{ duration: 0.3 }}
           >
             <p className="hint">
-              No peeking! Guess each card&rsquo;s suit and place it on a pile.
+              No peeking! Guess each card&rsquo;s suit and place it on a pile. Beat
+              the average (14+) to build a streak. 🔥
             </p>
 
             <div className="progress">
@@ -128,7 +199,6 @@ export default function App() {
             <section className="deck-zone">
               {!allPlaced ? (
                 <div className="deck-stack" aria-label={`${deck.length} cards remaining`}>
-                  {/* A few stacked backs for depth, plus the live top card. */}
                   <div className="deck-stack__shadow deck-stack__shadow--3" />
                   <div className="deck-stack__shadow deck-stack__shadow--2" />
                   <div className="deck-stack__shadow deck-stack__shadow--1" />
@@ -192,7 +262,16 @@ export default function App() {
             exit={{ opacity: 0, y: -12 }}
             transition={{ duration: 0.3 }}
           >
-            <Results piles={piles} score={score} bestScore={bestScore} onPlayAgain={newGame} />
+            <Results
+              piles={piles}
+              score={score}
+              bestScore={bestScore}
+              won={justWon}
+              currentStreak={currentStreak}
+              bestStreak={bestStreak}
+              history={history}
+              onPlayAgain={newGame}
+            />
           </motion.main>
         )}
       </AnimatePresence>
@@ -200,10 +279,10 @@ export default function App() {
   )
 }
 
-// The reveal screen: your score, a verdict, and every pile flipped face-up.
-function Results({ piles, score, bestScore, onPlayAgain }) {
+// The reveal screen: score, verdict, streak stats, history, and flipped piles.
+function Results({ piles, score, bestScore, won, currentStreak, bestStreak, history, onPlayAgain }) {
   const { emoji, text } = verdict(score)
-  const isBest = score >= bestScore && score > 0
+  const isBestScore = score >= bestScore && score > 0
 
   return (
     <>
@@ -218,9 +297,18 @@ function Results({ piles, score, bestScore, onPlayAgain }) {
           <span className="scoreboard__big">{score}</span>
           <span className="scoreboard__total">/ {TOTAL_CARDS} correct</span>
         </div>
-        {isBest && <span className="scoreboard__badge">New best! 🎉</span>}
+        <div className="scoreboard__badges">
+          {isBestScore && <span className="scoreboard__badge">New best score! 🎉</span>}
+          {won && (
+            <span className="scoreboard__badge scoreboard__badge--streak">
+              🔥 {currentStreak} win streak
+            </span>
+          )}
+        </div>
         <p className="scoreboard__verdict">{text}</p>
       </motion.div>
+
+      <StatsPanel currentStreak={currentStreak} bestStreak={bestStreak} history={history} />
 
       <div className="result-piles">
         {SUITS.map((suit) => {
@@ -262,5 +350,44 @@ function Results({ piles, score, bestScore, onPlayAgain }) {
         Play again 🔄
       </motion.button>
     </>
+  )
+}
+
+// Streak counters plus a little bar chart of your recent scores.
+function StatsPanel({ currentStreak, bestStreak, history }) {
+  return (
+    <div className="stats-panel">
+      <div className="stats-panel__row">
+        <div className="streak-card">
+          <span className="streak-card__value">🔥 {currentStreak}</span>
+          <span className="streak-card__label">Current streak</span>
+        </div>
+        <div className="streak-card">
+          <span className="streak-card__value">🏆 {bestStreak}</span>
+          <span className="streak-card__label">Best streak</span>
+        </div>
+      </div>
+
+      <div className="history">
+        <span className="history__title">Recent games</span>
+        {history.length === 0 ? (
+          <span className="history__empty">No games yet — this is your first!</span>
+        ) : (
+          <div className="history__chart">
+            {history.map((entry, idx) => (
+              <div className="history__bar-wrap" key={idx} title={`${entry.score} correct`}>
+                <motion.div
+                  className={`history__bar ${entry.won ? 'is-win' : ''}`}
+                  initial={{ height: 0 }}
+                  animate={{ height: `${Math.max((entry.score / TOTAL_CARDS) * 100, 6)}%` }}
+                  transition={{ delay: idx * 0.03, type: 'spring', stiffness: 120, damping: 16 }}
+                />
+                <span className="history__bar-score">{entry.score}</span>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
   )
 }

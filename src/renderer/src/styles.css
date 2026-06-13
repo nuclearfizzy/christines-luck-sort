@@ -1,22 +1,61 @@
 /* ===========================================================================
    Christine's Luck Sort — look & feel
-   A cozy casino-felt theme with soft gold accents.
+   Built around two themes (dark felt / light cream) that swap via a single
+   `data-theme` attribute on <html>. Every color below is a variable, so the
+   whole app re-skins instantly when the theme changes.
    =========================================================================== */
 
 :root {
-  --felt-1: #0f5138;
-  --felt-2: #0a3526;
-  --gold: #e7c66b;
-  --gold-soft: #c9a84e;
-  --cream: #f6f1e3;
-  --ink: #15241d;
-  --red: #d6324a;
-  --shadow: rgba(0, 0, 0, 0.35);
+  /* Sizing & shape — shared by both themes. */
   --card-w: 120px;
   --card-h: 168px;
   --radius: 14px;
   font-synthesis: none;
   -webkit-font-smoothing: antialiased;
+}
+
+/* ---- DARK theme (cozy casino felt) --------------------------------------- */
+[data-theme='dark'] {
+  --bg-1: #0f5138;
+  --bg-2: #0a3526;
+  --text: #f6f1e3;
+  --accent: #e7c66b;
+  --accent-strong: #f0d488;
+  --panel: rgba(0, 0, 0, 0.22);
+  --panel-strong: rgba(0, 0, 0, 0.32);
+  --topbar-bg: rgba(0, 0, 0, 0.12);
+  --border: rgba(231, 198, 107, 0.3);
+  --border-dashed: rgba(231, 198, 107, 0.45);
+  --card-face: #f6f1e3;
+  --card-ink: #15241d;
+  --card-red: #d6324a;
+  --deck-shadow: #1d3a2e;
+  --suit-red: #ff8a9b;
+  --suit-black: #eaeaea;
+  --shadow: rgba(0, 0, 0, 0.35);
+  --win: #43c97a;
+}
+
+/* ---- LIGHT theme (bright warm cream) ------------------------------------- */
+[data-theme='light'] {
+  --bg-1: #fbf6e8;
+  --bg-2: #e6dcc2;
+  --text: #243029;
+  --accent: #b8861f;
+  --accent-strong: #d9a93a;
+  --panel: rgba(255, 255, 255, 0.6);
+  --panel-strong: rgba(255, 255, 255, 0.82);
+  --topbar-bg: rgba(255, 255, 255, 0.45);
+  --border: rgba(0, 0, 0, 0.14);
+  --border-dashed: rgba(184, 134, 31, 0.5);
+  --card-face: #ffffff;
+  --card-ink: #1c2a22;
+  --card-red: #cc2c44;
+  --deck-shadow: #cfd6c4;
+  --suit-red: #cc2c44;
+  --suit-black: #2a2a2a;
+  --shadow: rgba(0, 0, 0, 0.18);
+  --win: #2faf63;
 }
 
 * {
@@ -33,13 +72,13 @@ body,
 
 body {
   font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-  color: var(--cream);
-  /* Radial felt with a subtle vignette toward the edges. */
+  color: var(--text);
   background:
-    radial-gradient(circle at 50% 30%, var(--felt-1), var(--felt-2) 70%),
-    var(--felt-2);
+    radial-gradient(circle at 50% 30%, var(--bg-1), var(--bg-2) 70%),
+    var(--bg-2);
   overflow: hidden;
   user-select: none;
+  transition: color 0.3s, background 0.3s;
 }
 
 .app {
@@ -54,8 +93,8 @@ body {
   align-items: center;
   justify-content: space-between;
   padding: 16px 28px;
-  border-bottom: 1px solid rgba(231, 198, 107, 0.18);
-  background: rgba(0, 0, 0, 0.12);
+  border-bottom: 1px solid var(--border);
+  background: var(--topbar-bg);
 }
 
 .brand {
@@ -73,7 +112,7 @@ body {
   font-size: 24px;
   font-weight: 700;
   letter-spacing: 0.5px;
-  color: var(--gold);
+  color: var(--accent);
   text-shadow: 0 2px 6px var(--shadow);
 }
 
@@ -83,24 +122,65 @@ body {
   gap: 18px;
 }
 
-.best {
+.stat {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
   line-height: 1.1;
 }
 
-.best__label {
+.stat__label {
   font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 1.5px;
   opacity: 0.6;
 }
 
-.best__value {
+.stat__value {
   font-size: 22px;
   font-weight: 700;
-  color: var(--gold);
+  color: var(--accent);
+}
+
+/* ---- Theme toggle switch -------------------------------------------------- */
+.theme-toggle {
+  position: relative;
+  width: 64px;
+  height: 32px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--panel);
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+}
+
+.theme-toggle__track {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 7px;
+  font-size: 14px;
+}
+
+.theme-toggle__thumb {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 2px 5px var(--shadow);
+  transition: transform 0.25s ease;
+}
+
+[data-theme='light'] .theme-toggle__thumb {
+  transform: translateX(32px);
 }
 
 /* ---- Buttons -------------------------------------------------------------- */
@@ -115,23 +195,23 @@ body {
 }
 
 .btn--ghost {
-  background: rgba(255, 255, 255, 0.08);
-  color: var(--cream);
-  border: 1px solid rgba(231, 198, 107, 0.35);
+  background: var(--panel);
+  color: var(--text);
+  border: 1px solid var(--border-dashed);
 }
 
 .btn--ghost:hover {
-  background: rgba(255, 255, 255, 0.16);
+  background: var(--panel-strong);
 }
 
 .btn--primary {
-  background: linear-gradient(180deg, #f0d488, var(--gold));
-  color: var(--ink);
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.3);
+  background: linear-gradient(180deg, var(--accent-strong), var(--accent));
+  color: var(--card-ink);
+  box-shadow: 0 6px 18px var(--shadow);
 }
 
 .btn--primary:hover {
-  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 8px 22px var(--shadow);
 }
 
 .btn--big {
@@ -169,14 +249,14 @@ body {
   flex: 1;
   height: 10px;
   border-radius: 999px;
-  background: rgba(0, 0, 0, 0.3);
+  background: var(--panel-strong);
   overflow: hidden;
 }
 
 .progress__fill {
   height: 100%;
   border-radius: 999px;
-  background: linear-gradient(90deg, var(--gold), #f0d488);
+  background: linear-gradient(90deg, var(--accent), var(--accent-strong));
 }
 
 .progress__label {
@@ -205,8 +285,8 @@ body {
   position: absolute;
   inset: 0;
   border-radius: var(--radius);
-  background: #1d3a2e;
-  border: 1px solid rgba(0, 0, 0, 0.3);
+  background: var(--deck-shadow);
+  border: 1px solid var(--shadow);
 }
 
 .deck-stack__shadow--1 { transform: translate(4px, 4px); }
@@ -276,7 +356,7 @@ body {
   box-shadow: 0 3px 8px var(--shadow);
 }
 
-/* Back of the card — a tidy diamond lattice. */
+/* Back of the card — a tidy diamond lattice (same in both themes). */
 .card__back {
   background: linear-gradient(135deg, #7d1d2c, #a3263a);
   border: 3px solid #f3e6c4;
@@ -294,8 +374,8 @@ body {
 
 /* Front of the card. */
 .card__front {
-  background: var(--cream);
-  color: var(--ink);
+  background: var(--card-face);
+  color: var(--card-ink);
   transform: rotateY(180deg);
   border: 1px solid rgba(0, 0, 0, 0.12);
   flex-direction: column;
@@ -303,7 +383,7 @@ body {
 }
 
 .card__front.is-red {
-  color: var(--red);
+  color: var(--card-red);
 }
 
 .card__corner {
@@ -356,7 +436,7 @@ body {
 
 /* Correct / wrong tinting after the reveal. */
 .card--correct .card__front {
-  box-shadow: 0 0 0 3px #43c97a, 0 6px 16px var(--shadow);
+  box-shadow: 0 0 0 3px var(--win), 0 6px 16px var(--shadow);
 }
 
 .card--wrong .card__front {
@@ -382,15 +462,15 @@ body {
   border-radius: 18px;
   cursor: pointer;
   font: inherit;
-  color: var(--cream);
-  background: rgba(0, 0, 0, 0.22);
-  border: 2px dashed rgba(231, 198, 107, 0.45);
+  color: var(--text);
+  background: var(--panel);
+  border: 2px dashed var(--border-dashed);
   transition: background 0.18s, border-color 0.18s;
 }
 
 .pile:hover:not(:disabled) {
-  background: rgba(0, 0, 0, 0.34);
-  border-color: var(--gold);
+  background: var(--panel-strong);
+  border-color: var(--accent);
 }
 
 .pile:disabled {
@@ -404,11 +484,11 @@ body {
 }
 
 .pile--red .pile__symbol {
-  color: #ff8a9b;
+  color: var(--suit-red);
 }
 
 .pile--black .pile__symbol {
-  color: #eaeaea;
+  color: var(--suit-black);
 }
 
 .pile__label {
@@ -420,7 +500,7 @@ body {
 .pile__count {
   font-size: 22px;
   font-weight: 700;
-  color: var(--gold);
+  color: var(--accent);
 }
 
 .pile__key {
@@ -434,8 +514,8 @@ body {
   align-items: center;
   justify-content: center;
   border-radius: 5px;
-  background: rgba(231, 198, 107, 0.18);
-  color: var(--gold);
+  background: var(--panel-strong);
+  color: var(--accent);
 }
 
 /* ---- Results screen ------------------------------------------------------- */
@@ -451,8 +531,8 @@ body {
   gap: 6px;
   padding: 22px 40px;
   border-radius: 22px;
-  background: rgba(0, 0, 0, 0.25);
-  border: 1px solid rgba(231, 198, 107, 0.3);
+  background: var(--panel);
+  border: 1px solid var(--border);
   text-align: center;
 }
 
@@ -469,7 +549,7 @@ body {
 .scoreboard__big {
   font-size: 56px;
   font-weight: 800;
-  color: var(--gold);
+  color: var(--accent);
   line-height: 1;
 }
 
@@ -478,14 +558,24 @@ body {
   opacity: 0.8;
 }
 
-.scoreboard__badge {
+.scoreboard__badges {
+  display: flex;
+  gap: 8px;
   margin-top: 2px;
+}
+
+.scoreboard__badge {
   font-size: 14px;
   font-weight: 700;
-  color: var(--ink);
-  background: var(--gold);
+  color: var(--card-ink);
+  background: var(--accent);
   padding: 3px 12px;
   border-radius: 999px;
+}
+
+.scoreboard__badge--streak {
+  background: linear-gradient(180deg, #ff8a4c, #ff5e62);
+  color: #fff;
 }
 
 .scoreboard__verdict {
@@ -493,6 +583,102 @@ body {
   font-size: 16px;
   max-width: 460px;
   opacity: 0.92;
+}
+
+/* ---- Stats panel (streaks + history chart) -------------------------------- */
+.stats-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: min(560px, 92%);
+  padding: 18px 22px;
+  border-radius: 18px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+}
+
+.stats-panel__row {
+  display: flex;
+  justify-content: space-around;
+  gap: 12px;
+}
+
+.streak-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.streak-card__value {
+  font-size: 30px;
+  font-weight: 800;
+  color: var(--accent);
+}
+
+.streak-card__label {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  opacity: 0.7;
+}
+
+.history {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.history__title {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  opacity: 0.7;
+}
+
+.history__chart {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  height: 70px;
+}
+
+.history__empty {
+  font-size: 13px;
+  opacity: 0.6;
+  font-style: italic;
+}
+
+.history__bar-wrap {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+  height: 100%;
+}
+
+.history__bar {
+  width: 100%;
+  max-width: 26px;
+  border-radius: 5px 5px 0 0;
+  background: var(--accent);
+  min-height: 4px;
+}
+
+.history__bar.is-win {
+  background: var(--win);
+}
+
+.history__bar-score {
+  font-size: 11px;
+  opacity: 0.7;
+}
+
+/* The dotted "average" marker line across the chart. */
+.history__chart {
+  position: relative;
 }
 
 .result-piles {
@@ -503,10 +689,10 @@ body {
 }
 
 .result-pile {
-  background: rgba(0, 0, 0, 0.2);
+  background: var(--panel);
   border-radius: 16px;
   padding: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--border);
 }
 
 .result-pile__head {
@@ -515,15 +701,15 @@ body {
   gap: 8px;
   margin-bottom: 10px;
   padding-bottom: 8px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid var(--border);
 }
 
 .result-pile__symbol {
   font-size: 22px;
 }
 
-.result-pile--red .result-pile__symbol { color: #ff8a9b; }
-.result-pile--black .result-pile__symbol { color: #eaeaea; }
+.result-pile--red .result-pile__symbol { color: var(--suit-red); }
+.result-pile--black .result-pile__symbol { color: var(--suit-black); }
 
 .result-pile__label {
   font-weight: 600;
@@ -532,7 +718,7 @@ body {
 
 .result-pile__score {
   font-size: 13px;
-  color: var(--gold);
+  color: var(--accent);
   font-weight: 700;
   white-space: nowrap;
 }
@@ -544,11 +730,11 @@ body {
   min-height: 82px;
 }
 
-/* Tidy scrollbar for the felt theme. */
+/* Tidy scrollbar. */
 ::-webkit-scrollbar {
   width: 10px;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(231, 198, 107, 0.3);
+  background: var(--border-dashed);
   border-radius: 999px;
 }

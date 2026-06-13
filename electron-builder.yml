@@ -1,0 +1,34 @@
+# How the shareable installer is built.
+appId: com.nuclearfizzy.christineslucksort
+productName: Christine's Luck Sort
+
+directories:
+  buildResources: build
+
+# Everything is bundled into out/ by electron-vite, so we only need to ship
+# that plus package.json. These negative globs trim source/config we don't need.
+files:
+  - '!**/.vscode/*'
+  - '!src/*'
+  - '!electron.vite.config.{js,ts,mjs,cjs}'
+  - '!{.eslintignore,.prettierignore,.gitignore,README.md}'
+  - '!{.env,.env.*,.npmrc}'
+
+asar: true
+
+win:
+  target:
+    - nsis
+  executableName: christines-luck-sort
+  # Final installer filename, e.g. christines-luck-sort-1.0.0-setup.exe
+  artifactName: ${name}-${version}-setup.${ext}
+
+# NSIS = the classic Windows installer wizard.
+nsis:
+  oneClick: false # show a real install wizard, not a silent install
+  perMachine: false # install just for the current user (no admin prompt)
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: always
+  createStartMenuShortcut: true
+  shortcutName: ${productName}
+  uninstallDisplayName: ${productName}
