@@ -123,7 +123,7 @@ const MODES = [
   },
   {
     key: 'zener',
-    icon: 'crystal',
+    icon: 'spiral',
     name: 'Zener ESP Test',
     desc: 'The classic ESP experiment: guess the symbol on 25 cards. Chance is 5/25 — can you beat it?'
   }
@@ -553,7 +553,7 @@ function Results({ result, piles, onPlayAgain, onMenu }) {
           )}
           {result.isZenerBest && (
             <span className="scoreboard__badge">
-              <Icon name="crystal" size={14} /> New ESP best
+              <Icon name="spiral" size={14} /> New ESP best
             </span>
           )}
           {mode === 'hint' && (
@@ -597,7 +597,7 @@ function Results({ result, piles, onPlayAgain, onMenu }) {
         <div className="daily-panel">
           <div className="daily-panel__row">
             <span className="daily-panel__title">
-              <Icon name="crystal" size={15} /> ESP Test · pure chance averages {avg}/{total}
+              <Icon name="spiral" size={15} /> ESP Test · pure chance averages {avg}/{total}
             </span>
             <span className="daily-panel__best">
               Your best: {result.zenerBest}/{total}
