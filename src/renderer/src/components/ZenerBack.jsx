@@ -1,46 +1,87 @@
-// An ornate Moroccan/Spanish "zellige" tile back, used only for Zener cards.
-// It mixes a tessellated 8-pointed-star tile pattern with the framed border and
-// central medallion of a classic playing-card back.
+// A classic blue playing-card back for the Zener cards, inspired by the
+// traditional ornate design: an all-over four-point-star lattice on white,
+// a double border frame, and a central petal-rosette medallion.
 
-// An 8-pointed star (khatim), drawn in a 40x40 tile centred at (20,20).
-const STAR =
-  'M20,3 L23.06,12.61 L32.02,7.98 L27.39,16.94 L37,20 L27.39,23.06 ' +
-  'L32.02,32.02 L23.06,27.39 L20,37 L16.94,27.39 L7.98,32.02 L12.61,23.06 ' +
-  'L3,20 L12.61,16.94 L7.98,7.98 L16.94,12.61 Z'
+const BLUE = '#2f63b5'
+const CX = 60
+const CY = 84
+
+// One lattice "sparkle" (a 4-point star) drawn in a 20x20 tile.
+const STAR = 'M10,2 L11.98,8.02 L18,10 L11.98,11.98 L10,18 L8.02,11.98 L2,10 L8.02,8.02 Z'
+// A medallion petal, pointing up from the centre.
+const PETAL = 'M0,-6 C 4,-11 4,-16 0,-20 C -4,-16 -4,-11 0,-6 Z'
+const INNER_PETAL = 'M0,-5 C 3,-8 3,-11 0,-13 C -3,-11 -3,-8 0,-5 Z'
+
+const outerPetals = Array.from({ length: 16 }, (_, i) => i * 22.5)
+const innerPetals = Array.from({ length: 8 }, (_, i) => i * 45 + 22.5)
+const beads = Array.from({ length: 28 }, (_, i) => (i * 360) / 28)
 
 export default function ZenerBack() {
   return (
     <svg className="zener-back" viewBox="0 0 120 168" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
       <defs>
-        {/* One repeating tile: a gold star on deep teal, with terracotta
-            diamonds at the corners that join up across neighbouring tiles. */}
-        <pattern id="zellige" width="40" height="40" patternUnits="userSpaceOnUse">
-          <rect width="40" height="40" fill="#15394d" />
-          <path d={STAR} fill="#e0b352" stroke="#f3e7c6" strokeWidth="0.8" />
-          <path d="M0,-5 L5,0 L0,5 L-5,0 Z" fill="#c2562f" />
-          <path d="M40,-5 L45,0 L40,5 L35,0 Z" fill="#c2562f" />
-          <path d="M0,35 L5,40 L0,45 L-5,40 Z" fill="#c2562f" />
-          <path d="M40,35 L45,40 L40,45 L35,40 Z" fill="#c2562f" />
+        <pattern id="zlattice" width="20" height="20" patternUnits="userSpaceOnUse">
+          <path d={STAR} fill={BLUE} />
+          <circle cx="0" cy="0" r="1.3" fill={BLUE} />
+          <circle cx="20" cy="0" r="1.3" fill={BLUE} />
+          <circle cx="0" cy="20" r="1.3" fill={BLUE} />
+          <circle cx="20" cy="20" r="1.3" fill={BLUE} />
         </pattern>
       </defs>
 
-      {/* Base + all-over tile pattern. */}
-      <rect x="0" y="0" width="120" height="168" fill="#15394d" />
-      <rect x="6" y="6" width="108" height="156" rx="6" fill="url(#zellige)" />
+      {/* White base + all-over lattice. */}
+      <rect x="0" y="0" width="120" height="168" fill="#fdfdfb" />
+      <rect x="0" y="0" width="120" height="168" fill="url(#zlattice)" />
 
-      {/* Central medallion — the focal point of a playing-card back. */}
-      <circle cx="60" cy="84" r="23" fill="#15394d" stroke="#e7c66b" strokeWidth="1.5" />
-      <path
-        d={STAR}
-        transform="translate(60,84) scale(1.25) translate(-20,-20)"
-        fill="#e0b352"
-        stroke="#f3e7c6"
+      {/* Clear halo so the medallion reads against the busy field. */}
+      <circle cx={CX} cy={CY} r="30" fill="#fdfdfb" />
+
+      {/* Beaded outer ring. */}
+      {beads.map((a, i) => {
+        const rad = (a * Math.PI) / 180
+        return (
+          <circle
+            key={`b${i}`}
+            cx={CX + 27 * Math.cos(rad)}
+            cy={CY + 27 * Math.sin(rad)}
+            r="1.1"
+            fill={BLUE}
+          />
+        )
+      })}
+      <circle cx={CX} cy={CY} r="24" fill="none" stroke={BLUE} strokeWidth="1.2" />
+
+      {/* Petal rosette (two layers). */}
+      {outerPetals.map((a, i) => (
+        <path key={`p${i}`} d={PETAL} fill={BLUE} transform={`translate(${CX},${CY}) rotate(${a})`} />
+      ))}
+      {innerPetals.map((a, i) => (
+        <path
+          key={`ip${i}`}
+          d={INNER_PETAL}
+          fill={BLUE}
+          transform={`translate(${CX},${CY}) rotate(${a})`}
+        />
+      ))}
+
+      {/* Centre boss. */}
+      <circle cx={CX} cy={CY} r="6" fill="#fdfdfb" />
+      <circle cx={CX} cy={CY} r="6" fill="none" stroke={BLUE} strokeWidth="1.4" />
+      <circle cx={CX} cy={CY} r="2.4" fill={BLUE} />
+
+      {/* Double border frame (solid + beaded). */}
+      <rect x="3" y="3" width="114" height="162" rx="9" fill="none" stroke={BLUE} strokeWidth="2" />
+      <rect
+        x="7"
+        y="7"
+        width="106"
+        height="154"
+        rx="6"
+        fill="none"
+        stroke={BLUE}
         strokeWidth="0.8"
+        strokeDasharray="1 3"
       />
-
-      {/* Ornate double border frame. */}
-      <rect x="3.5" y="3.5" width="113" height="161" rx="10" fill="none" stroke="#e7c66b" strokeWidth="2" />
-      <rect x="7.5" y="7.5" width="105" height="153" rx="7" fill="none" stroke="#c2562f" strokeWidth="1" />
     </svg>
   )
 }

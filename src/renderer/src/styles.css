@@ -376,10 +376,10 @@ body {
   overflow: hidden; /* clip the Zener back's SVG to the rounded corners */
 }
 
-/* Zener cards get an ornate Moroccan-tile back (see ZenerBack.jsx). */
+/* Zener cards get a classic blue ornate back (see ZenerBack.jsx). */
 .card__back--zener {
-  background: #15394d;
-  border-color: #e7c66b;
+  background: #fdfdfb;
+  border-color: #2f63b5;
 }
 
 .zener-back {
