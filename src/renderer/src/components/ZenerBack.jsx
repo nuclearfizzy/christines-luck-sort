@@ -20,12 +20,16 @@ export default function ZenerBack() {
   return (
     <svg className="zener-back" viewBox="0 0 120 168" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
       <defs>
-        <pattern id="zlattice" width="20" height="20" patternUnits="userSpaceOnUse">
-          <path d={STAR} fill={BLUE} />
-          <circle cx="0" cy="0" r="1.3" fill={BLUE} />
-          <circle cx="20" cy="0" r="1.3" fill={BLUE} />
-          <circle cx="0" cy="20" r="1.3" fill={BLUE} />
-          <circle cx="20" cy="20" r="1.3" fill={BLUE} />
+        {/* Tile is 15 (the star path is authored at 20, so it's scaled to 0.75)
+            — a denser lattice than a full-size tile. */}
+        <pattern id="zlattice" width="15" height="15" patternUnits="userSpaceOnUse">
+          <g transform="scale(0.75)">
+            <path d={STAR} fill={BLUE} />
+          </g>
+          <circle cx="0" cy="0" r="1" fill={BLUE} />
+          <circle cx="15" cy="0" r="1" fill={BLUE} />
+          <circle cx="0" cy="15" r="1" fill={BLUE} />
+          <circle cx="15" cy="15" r="1" fill={BLUE} />
         </pattern>
       </defs>
 
