@@ -154,11 +154,14 @@ export default function App() {
       if (view !== 'placing') return
       if (deck.length === 0) return
       if (piles[suitKey].length >= PILE_LIMIT) return // pile is full
+      // In Hint Mode the colour is known, so a card can only go on a pile of
+      // its own colour (red -> ♥/♦, black -> ♠/♣).
+      if (mode === 'hint' && suitMeta[deck[0].suit].color !== suitMeta[suitKey].color) return
       const [top, ...rest] = deck
       setPiles((prev) => ({ ...prev, [suitKey]: [...prev[suitKey], top] }))
       setDeck(rest)
     },
-    [view, deck, piles]
+    [view, deck, piles, mode]
   )
 
   // Reveal & record the round (everything computed once, here in the handler).
@@ -297,7 +300,7 @@ export default function App() {
             <ModeBanner mode={mode} />
             <p className="hint">
               {mode === 'hint'
-                ? "You can see each card's colour — use it! Place all 52 cards, then reveal."
+                ? 'You can see each card’s colour — so it can only go on a matching-colour pile. Pick which of the two suits is right!'
                 : 'No peeking! Guess each card’s suit and place it on a pile. Beat the average (14+) to build a streak. 🔥'}
             </p>
 
@@ -368,11 +371,15 @@ export default function App() {
               {SUITS.map((suit, i) => {
                 const count = piles[suit.key].length
                 const full = count >= PILE_LIMIT
-                const locked = allPlaced || full
+                // In Hint Mode, piles of the wrong colour for the current card are off-limits.
+                const colorBlocked = mode === 'hint' && currentColor && suit.color !== currentColor
+                const locked = allPlaced || full || colorBlocked
                 return (
                   <motion.button
                     key={suit.key}
-                    className={`pile pile--${suit.color} ${full ? 'pile--full' : ''}`}
+                    className={`pile pile--${suit.color} ${full ? 'pile--full' : ''} ${
+                      colorBlocked ? 'pile--blocked' : ''
+                    }`}
                     onClick={() => placeOn(suit.key)}
                     disabled={locked}
                     whileHover={locked ? {} : { scale: 1.03, y: -4 }}

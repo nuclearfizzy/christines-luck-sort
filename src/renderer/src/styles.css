@@ -510,6 +510,13 @@ body {
   color: #fff;
 }
 
+/* A pile that's the wrong colour for the current card (Hint Mode). */
+.pile.pile--blocked {
+  opacity: 0.3;
+  cursor: not-allowed;
+  border-style: dashed;
+}
+
 .pile__symbol {
   font-size: 40px;
   line-height: 1;
