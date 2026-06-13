@@ -20,6 +20,7 @@ win:
   target:
     - nsis
   executableName: christines-luck-sort
+  icon: build/icon.ico
   # Final installer filename, e.g. christines-luck-sort-1.0.0-setup.exe
   artifactName: ${name}-${version}-setup.${ext}
 

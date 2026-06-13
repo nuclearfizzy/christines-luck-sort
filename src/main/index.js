@@ -1,6 +1,8 @@
 import { app, BrowserWindow, shell } from 'electron'
 import { join } from 'path'
 
+const isDev = !!process.env['ELECTRON_RENDERER_URL']
+
 // Creates the actual desktop window that the game lives inside.
 function createWindow() {
   const mainWindow = new BrowserWindow({
@@ -12,6 +14,8 @@ function createWindow() {
     autoHideMenuBar: true,
     backgroundColor: '#0b3d2e',
     title: "Christine's Luck Sort",
+    // In dev, show our icon in the taskbar. (The packaged app uses the .exe icon.)
+    ...(isDev ? { icon: join(__dirname, '../../build/icon.png') } : {}),
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
       sandbox: false,

@@ -10,6 +10,7 @@
     "build": "electron-vite build",
     "preview": "electron-vite preview",
     "start": "electron-vite preview",
+    "icon": "node scripts/make-icon.mjs",
     "build:win": "electron-vite build && electron-builder --win"
   },
   "dependencies": {
@@ -22,6 +23,8 @@
     "electron": "^31.3.1",
     "electron-builder": "^26.15.3",
     "electron-vite": "^2.3.0",
+    "png-to-ico": "^3.0.1",
+    "sharp": "^0.35.1",
     "vite": "^5.4.2"
   }
 }

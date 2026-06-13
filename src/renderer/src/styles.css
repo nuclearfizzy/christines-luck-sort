@@ -34,6 +34,12 @@
   --suit-black: #eaeaea;
   --shadow: rgba(0, 0, 0, 0.35);
   --win: #43c97a;
+  /* Card back — classic red. */
+  --back-1: #7d1d2c;
+  --back-2: #a3263a;
+  --back-border: #f3e6c4;
+  --back-pattern: rgba(255, 255, 255, 0.12);
+  --back-pattern-border: rgba(255, 255, 255, 0.25);
 }
 
 /* ---- LIGHT theme (bright warm cream) ------------------------------------- */
@@ -56,6 +62,12 @@
   --suit-black: #2a2a2a;
   --shadow: rgba(0, 0, 0, 0.18);
   --win: #2faf63;
+  /* Card back — pastel pink. */
+  --back-1: #f6aecb;
+  --back-2: #ef8fb9;
+  --back-border: #ffffff;
+  --back-pattern: rgba(255, 255, 255, 0.5);
+  --back-pattern-border: rgba(255, 255, 255, 0.7);
 }
 
 * {
@@ -356,10 +368,11 @@ body {
   box-shadow: 0 3px 8px var(--shadow);
 }
 
-/* Back of the card — a tidy diamond lattice (same in both themes). */
+/* Back of the card — a tidy diamond lattice. Colors come from the theme:
+   classic red in dark mode, pastel pink in light mode. */
 .card__back {
-  background: linear-gradient(135deg, #7d1d2c, #a3263a);
-  border: 3px solid #f3e6c4;
+  background: linear-gradient(135deg, var(--back-1), var(--back-2));
+  border: 3px solid var(--back-border);
 }
 
 .card__back-pattern {
@@ -367,9 +380,9 @@ body {
   inset: 6px;
   border-radius: 8px;
   background-image:
-    repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.12) 0 6px, transparent 6px 12px),
-    repeating-linear-gradient(-45deg, rgba(255, 255, 255, 0.12) 0 6px, transparent 6px 12px);
-  border: 1px solid rgba(255, 255, 255, 0.25);
+    repeating-linear-gradient(45deg, var(--back-pattern) 0 6px, transparent 6px 12px),
+    repeating-linear-gradient(-45deg, var(--back-pattern) 0 6px, transparent 6px 12px);
+  border: 1px solid var(--back-pattern-border);
 }
 
 /* Front of the card. */
