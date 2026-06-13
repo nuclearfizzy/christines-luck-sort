@@ -1,41 +1,78 @@
-// A classic blue playing-card back for the Zener cards: an all-over
-// four-point-star lattice on white, a central petal-rosette medallion with a
-// solid border, and a double border frame.
-//
-// To avoid the medallion chopping background stars in half, the lattice is
-// softly faded out (via a radial mask) in the area around the medallion, so
-// stars gently disappear rather than being hard-clipped.
+// The Zener card back, themed to match the current mode:
+//   dark  -> a blue/white Portuguese "azulejo" tile pattern with orange diamonds
+//   light -> a soft pastel floral cottage-tile pattern
+// Both share a bordered central medallion, and the tile pattern is softly faded
+// out around it (radial mask) so no tile is ever chopped in half.
 
-const BLUE = '#2f63b5'
+const PALETTE = {
+  dark: {
+    bg: '#fdfdfb',
+    main: '#2f63b5',
+    inner: '#2f63b5',
+    center: '#e8951f',
+    frame: '#2f63b5',
+    frame2: '#e8951f'
+  },
+  light: {
+    bg: '#f8f1e1',
+    main: '#cf6f8c',
+    inner: '#9bb58c',
+    center: '#d2a23f',
+    frame: '#9bb58c',
+    frame2: '#cf6f8c'
+  }
+}
+
 const CX = 60
 const CY = 84
 
-const STAR = 'M10,2 L11.98,8.02 L18,10 L11.98,11.98 L10,18 L8.02,11.98 L2,10 L8.02,8.02 Z'
 const PETAL = 'M0,-6 C 4,-11 4,-15 0,-19 C -4,-15 -4,-11 0,-6 Z'
 const INNER_PETAL = 'M0,-5 C 3,-8 3,-11 0,-13 C -3,-11 -3,-8 0,-5 Z'
+const TILE_PETAL = 'M0,-3 C 2.6,-6 2.6,-9 0,-11 C -2.6,-9 -2.6,-6 0,-3 Z'
 
 const outerPetals = Array.from({ length: 16 }, (_, i) => i * 22.5)
 const innerPetals = Array.from({ length: 8 }, (_, i) => i * 45 + 22.5)
 const beads = Array.from({ length: 22 }, (_, i) => (i * 360) / 22)
+const tilePetals = Array.from({ length: 8 }, (_, i) => i * 45)
 
 export default function ZenerBack() {
+  const theme =
+    (typeof document !== 'undefined' && document.documentElement.getAttribute('data-theme')) || 'dark'
+  const light = theme === 'light'
+  const p = PALETTE[light ? 'light' : 'dark']
+
   return (
     <svg className="zener-back" viewBox="0 0 120 168" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
       <defs>
-        {/* Tile is 15 (star scaled to 0.75) for a dense lattice. */}
-        <pattern id="zlattice" width="15" height="15" patternUnits="userSpaceOnUse">
-          <g transform="scale(0.75)">
-            <path d={STAR} fill={BLUE} />
-          </g>
-          <circle cx="0" cy="0" r="1" fill={BLUE} />
-          <circle cx="15" cy="0" r="1" fill={BLUE} />
-          <circle cx="0" cy="15" r="1" fill={BLUE} />
-          <circle cx="15" cy="15" r="1" fill={BLUE} />
-        </pattern>
+        {light ? (
+          // Floral cottage tile.
+          <pattern id="zpat" width="30" height="30" patternUnits="userSpaceOnUse">
+            {tilePetals.map((a, i) => (
+              <path key={i} d={TILE_PETAL} fill={p.main} transform={`translate(15,15) rotate(${a})`} />
+            ))}
+            <circle cx="15" cy="15" r="2.8" fill={p.center} />
+            <circle cx="0" cy="0" r="1.8" fill={p.inner} />
+            <circle cx="30" cy="0" r="1.8" fill={p.inner} />
+            <circle cx="0" cy="30" r="1.8" fill={p.inner} />
+            <circle cx="30" cy="30" r="1.8" fill={p.inner} />
+            <circle cx="15" cy="0" r="1.1" fill={p.center} />
+            <circle cx="0" cy="15" r="1.1" fill={p.center} />
+            <circle cx="30" cy="15" r="1.1" fill={p.center} />
+            <circle cx="15" cy="30" r="1.1" fill={p.center} />
+          </pattern>
+        ) : (
+          // Azulejo: blue circles at the tile corners + an orange diamond centre.
+          <pattern id="zpat" width="30" height="30" patternUnits="userSpaceOnUse">
+            <circle cx="0" cy="0" r="15" fill={p.main} />
+            <circle cx="30" cy="0" r="15" fill={p.main} />
+            <circle cx="0" cy="30" r="15" fill={p.main} />
+            <circle cx="30" cy="30" r="15" fill={p.main} />
+            <path d="M15,9 L21,15 L15,21 L9,15 Z" fill={p.center} />
+          </pattern>
+        )}
 
-        {/* Fades the lattice out near the medallion so no star is hard-clipped. */}
-        <radialGradient id="zfade" cx={CX} cy={CY} r="46" gradientUnits="userSpaceOnUse">
-          <stop offset="0.62" stopColor="#000" />
+        <radialGradient id="zfade" cx={CX} cy={CY} r="40" gradientUnits="userSpaceOnUse">
+          <stop offset="0.71" stopColor="#000" />
           <stop offset="1" stopColor="#fff" />
         </radialGradient>
         <mask id="zlatmask">
@@ -44,13 +81,13 @@ export default function ZenerBack() {
         </mask>
       </defs>
 
-      {/* White base + lattice, faded out around the centre. */}
-      <rect x="0" y="0" width="120" height="168" fill="#fdfdfb" />
-      <rect x="0" y="0" width="120" height="168" fill="url(#zlattice)" mask="url(#zlatmask)" />
+      {/* Base + tile pattern, faded out around the centre. */}
+      <rect x="0" y="0" width="120" height="168" fill={p.bg} />
+      <rect x="0" y="0" width="120" height="168" fill="url(#zpat)" mask="url(#zlatmask)" />
 
-      {/* Medallion: a solid blue border ring around a clean disc. */}
-      <circle cx={CX} cy={CY} r="28.5" fill={BLUE} />
-      <circle cx={CX} cy={CY} r="26" fill="#fdfdfb" />
+      {/* Medallion: a solid border ring around a clean disc. */}
+      <circle cx={CX} cy={CY} r="28.5" fill={p.main} />
+      <circle cx={CX} cy={CY} r="26" fill={p.bg} />
 
       {/* Beaded ring. */}
       {beads.map((a, i) => {
@@ -60,33 +97,33 @@ export default function ZenerBack() {
             key={`b${i}`}
             cx={CX + 23.5 * Math.cos(rad)}
             cy={CY + 23.5 * Math.sin(rad)}
-            r="1"
-            fill={BLUE}
+            r="1.1"
+            fill={p.inner}
           />
         )
       })}
-      <circle cx={CX} cy={CY} r="21" fill="none" stroke={BLUE} strokeWidth="1" />
+      <circle cx={CX} cy={CY} r="21" fill="none" stroke={p.inner} strokeWidth="1" />
 
       {/* Petal rosette (two layers). */}
       {outerPetals.map((a, i) => (
-        <path key={`p${i}`} d={PETAL} fill={BLUE} transform={`translate(${CX},${CY}) rotate(${a})`} />
+        <path key={`p${i}`} d={PETAL} fill={p.main} transform={`translate(${CX},${CY}) rotate(${a})`} />
       ))}
       {innerPetals.map((a, i) => (
         <path
           key={`ip${i}`}
           d={INNER_PETAL}
-          fill={BLUE}
+          fill={p.inner}
           transform={`translate(${CX},${CY}) rotate(${a})`}
         />
       ))}
 
       {/* Centre boss. */}
-      <circle cx={CX} cy={CY} r="6" fill="#fdfdfb" />
-      <circle cx={CX} cy={CY} r="6" fill="none" stroke={BLUE} strokeWidth="1.4" />
-      <circle cx={CX} cy={CY} r="2.4" fill={BLUE} />
+      <circle cx={CX} cy={CY} r="6" fill={p.bg} />
+      <circle cx={CX} cy={CY} r="6" fill="none" stroke={p.main} strokeWidth="1.2" />
+      <circle cx={CX} cy={CY} r="3" fill={p.center} />
 
-      {/* Double border frame (solid + beaded). */}
-      <rect x="3" y="3" width="114" height="162" rx="9" fill="none" stroke={BLUE} strokeWidth="2" />
+      {/* Double border frame. */}
+      <rect x="3" y="3" width="114" height="162" rx="9" fill="none" stroke={p.frame} strokeWidth="2" />
       <rect
         x="7"
         y="7"
@@ -94,7 +131,7 @@ export default function ZenerBack() {
         height="154"
         rx="6"
         fill="none"
-        stroke={BLUE}
+        stroke={p.frame2}
         strokeWidth="0.8"
         strokeDasharray="1 3"
       />

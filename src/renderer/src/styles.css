@@ -376,10 +376,16 @@ body {
   overflow: hidden; /* clip the Zener back's SVG to the rounded corners */
 }
 
-/* Zener cards get a classic blue ornate back (see ZenerBack.jsx). */
+/* Zener cards get a themed ornate back (see ZenerBack.jsx):
+   blue azulejo in dark mode, pastel floral in light mode. */
 .card__back--zener {
   background: #fdfdfb;
   border-color: #2f63b5;
+}
+
+[data-theme='light'] .card__back--zener {
+  background: #f8f1e1;
+  border-color: #9bb58c;
 }
 
 .zener-back {
