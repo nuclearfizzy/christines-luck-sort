@@ -25,15 +25,8 @@ export default function Icon({ name, size = 20, className = '' }) {
       return (
         <svg {...base} fill="currentColor">
           {[45, 135, 225, 315].map((a) => (
-            <path key={a} d={leaf} transform={`translate(12,11) rotate(${a}) scale(0.7)`} />
+            <path key={a} d={leaf} transform={`translate(12,12) rotate(${a}) scale(0.7)`} />
           ))}
-          <path
-            d="M12 12 C 11 15 11 18 10.5 22"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.6"
-            strokeLinecap="round"
-          />
         </svg>
       )
     }
