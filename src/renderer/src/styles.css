@@ -377,15 +377,15 @@ body {
 }
 
 /* Zener cards get a themed ornate back (see ZenerBack.jsx):
-   blue azulejo in dark mode, pastel floral in light mode. */
+   pastel floral in dark mode, blue azulejo in light mode. */
 .card__back--zener {
-  background: #fdfdfb;
-  border-color: #2f63b5;
+  background: #f8f1e1;
+  border-color: #9bb58c;
 }
 
 [data-theme='light'] .card__back--zener {
-  background: #f8f1e1;
-  border-color: #9bb58c;
+  background: #fdfdfb;
+  border-color: #2f63b5;
 }
 
 .zener-back {

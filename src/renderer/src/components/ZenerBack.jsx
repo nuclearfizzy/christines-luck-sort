@@ -5,7 +5,7 @@
 // out around it (radial mask) so no tile is ever chopped in half.
 
 const PALETTE = {
-  dark: {
+  azulejo: {
     bg: '#fdfdfb',
     main: '#2f63b5',
     inner: '#2f63b5',
@@ -13,7 +13,7 @@ const PALETTE = {
     frame: '#2f63b5',
     frame2: '#e8951f'
   },
-  light: {
+  floral: {
     bg: '#f8f1e1',
     main: '#cf6f8c',
     inner: '#9bb58c',
@@ -38,13 +38,14 @@ const tilePetals = Array.from({ length: 8 }, (_, i) => i * 45)
 export default function ZenerBack() {
   const theme =
     (typeof document !== 'undefined' && document.documentElement.getAttribute('data-theme')) || 'dark'
-  const light = theme === 'light'
-  const p = PALETTE[light ? 'light' : 'dark']
+  // Swapped: dark mode shows the floral back, light mode shows the azulejo back.
+  const floral = theme === 'dark'
+  const p = PALETTE[floral ? 'floral' : 'azulejo']
 
   return (
     <svg className="zener-back" viewBox="0 0 120 168" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
       <defs>
-        {light ? (
+        {floral ? (
           // Floral cottage tile.
           <pattern id="zpat" width="30" height="30" patternUnits="userSpaceOnUse">
             {tilePetals.map((a, i) => (
