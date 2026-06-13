@@ -401,7 +401,7 @@ export default function App() {
                         exit={{ scale: 0.9, opacity: 0 }}
                         transition={{ duration: 0.18 }}
                       >
-                        <Card card={currentCard} faceUp={false} />
+                        <Card card={currentCard} faceUp={false} theme={theme} />
                       </motion.div>
                     </AnimatePresence>
                     <span className="deck-stack__count">{deck.length} left</span>

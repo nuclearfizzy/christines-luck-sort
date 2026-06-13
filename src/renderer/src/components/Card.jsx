@@ -13,7 +13,7 @@ const suitMeta = Object.fromEntries(SUITS.map((suit) => [suit.key, suit]))
 //   faceUp  -> show the front (true) or the back (false)
 //   correct -> true/false to tint it green/red after the reveal, null otherwise
 //   small   -> render a compact version (used in the result piles)
-export default function Card({ card, faceUp = false, correct = null, small = false }) {
+export default function Card({ card, faceUp = false, correct = null, small = false, theme = 'dark' }) {
   const isZener = !!(card && card.symbol)
   const meta = card && !isZener ? suitMeta[card.suit] : null
 
@@ -32,7 +32,7 @@ export default function Card({ card, faceUp = false, correct = null, small = fal
     <div className={classes}>
       <div className={`card__inner ${faceUp ? 'is-faceup' : ''}`}>
         <div className={`card__face card__back ${isZener ? 'card__back--zener' : ''}`}>
-          {isZener ? <ZenerBack /> : <div className="card__back-pattern" />}
+          {isZener ? <ZenerBack theme={theme} /> : <div className="card__back-pattern" />}
         </div>
         <div className={frontClass}>
           {isZener ? (

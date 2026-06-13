@@ -35,9 +35,7 @@ const innerPetals = Array.from({ length: 8 }, (_, i) => i * 45 + 22.5)
 const beads = Array.from({ length: 22 }, (_, i) => (i * 360) / 22)
 const tilePetals = Array.from({ length: 8 }, (_, i) => i * 45)
 
-export default function ZenerBack() {
-  const theme =
-    (typeof document !== 'undefined' && document.documentElement.getAttribute('data-theme')) || 'dark'
+export default function ZenerBack({ theme = 'dark' }) {
   // Swapped: dark mode shows the floral back, light mode shows the azulejo back.
   const floral = theme === 'dark'
   const p = PALETTE[floral ? 'floral' : 'azulejo']
