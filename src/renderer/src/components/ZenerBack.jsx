@@ -1,10 +1,22 @@
 // A classic blue playing-card back for the Zener cards: an all-over
-// four-point-star lattice on white inside a double border frame.
+// four-point-star lattice on white, a central petal-rosette medallion with a
+// solid border, and a double border frame.
+//
+// To avoid the medallion chopping background stars in half, the lattice is
+// softly faded out (via a radial mask) in the area around the medallion, so
+// stars gently disappear rather than being hard-clipped.
 
 const BLUE = '#2f63b5'
+const CX = 60
+const CY = 84
 
-// One lattice "sparkle" (a 4-point star) authored in a 20x20 box.
 const STAR = 'M10,2 L11.98,8.02 L18,10 L11.98,11.98 L10,18 L8.02,11.98 L2,10 L8.02,8.02 Z'
+const PETAL = 'M0,-6 C 4,-11 4,-15 0,-19 C -4,-15 -4,-11 0,-6 Z'
+const INNER_PETAL = 'M0,-5 C 3,-8 3,-11 0,-13 C -3,-11 -3,-8 0,-5 Z'
+
+const outerPetals = Array.from({ length: 16 }, (_, i) => i * 22.5)
+const innerPetals = Array.from({ length: 8 }, (_, i) => i * 45 + 22.5)
+const beads = Array.from({ length: 22 }, (_, i) => (i * 360) / 22)
 
 export default function ZenerBack() {
   return (
@@ -20,11 +32,58 @@ export default function ZenerBack() {
           <circle cx="0" cy="15" r="1" fill={BLUE} />
           <circle cx="15" cy="15" r="1" fill={BLUE} />
         </pattern>
+
+        {/* Fades the lattice out near the medallion so no star is hard-clipped. */}
+        <radialGradient id="zfade" cx={CX} cy={CY} r="46" gradientUnits="userSpaceOnUse">
+          <stop offset="0.62" stopColor="#000" />
+          <stop offset="1" stopColor="#fff" />
+        </radialGradient>
+        <mask id="zlatmask">
+          <rect x="0" y="0" width="120" height="168" fill="#fff" />
+          <rect x="0" y="0" width="120" height="168" fill="url(#zfade)" />
+        </mask>
       </defs>
 
-      {/* White base + uniform all-over lattice (nothing covering it). */}
+      {/* White base + lattice, faded out around the centre. */}
       <rect x="0" y="0" width="120" height="168" fill="#fdfdfb" />
-      <rect x="0" y="0" width="120" height="168" fill="url(#zlattice)" />
+      <rect x="0" y="0" width="120" height="168" fill="url(#zlattice)" mask="url(#zlatmask)" />
+
+      {/* Medallion: a solid blue border ring around a clean disc. */}
+      <circle cx={CX} cy={CY} r="28.5" fill={BLUE} />
+      <circle cx={CX} cy={CY} r="26" fill="#fdfdfb" />
+
+      {/* Beaded ring. */}
+      {beads.map((a, i) => {
+        const rad = (a * Math.PI) / 180
+        return (
+          <circle
+            key={`b${i}`}
+            cx={CX + 23.5 * Math.cos(rad)}
+            cy={CY + 23.5 * Math.sin(rad)}
+            r="1"
+            fill={BLUE}
+          />
+        )
+      })}
+      <circle cx={CX} cy={CY} r="21" fill="none" stroke={BLUE} strokeWidth="1" />
+
+      {/* Petal rosette (two layers). */}
+      {outerPetals.map((a, i) => (
+        <path key={`p${i}`} d={PETAL} fill={BLUE} transform={`translate(${CX},${CY}) rotate(${a})`} />
+      ))}
+      {innerPetals.map((a, i) => (
+        <path
+          key={`ip${i}`}
+          d={INNER_PETAL}
+          fill={BLUE}
+          transform={`translate(${CX},${CY}) rotate(${a})`}
+        />
+      ))}
+
+      {/* Centre boss. */}
+      <circle cx={CX} cy={CY} r="6" fill="#fdfdfb" />
+      <circle cx={CX} cy={CY} r="6" fill="none" stroke={BLUE} strokeWidth="1.4" />
+      <circle cx={CX} cy={CY} r="2.4" fill={BLUE} />
 
       {/* Double border frame (solid + beaded). */}
       <rect x="3" y="3" width="114" height="162" rx="9" fill="none" stroke={BLUE} strokeWidth="2" />
