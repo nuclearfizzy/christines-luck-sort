@@ -373,6 +373,19 @@ body {
 .card__back {
   background: linear-gradient(135deg, var(--back-1), var(--back-2));
   border: 3px solid var(--back-border);
+  overflow: hidden; /* clip the Zener back's SVG to the rounded corners */
+}
+
+/* Zener cards get an ornate Moroccan-tile back (see ZenerBack.jsx). */
+.card__back--zener {
+  background: #15394d;
+  border-color: #e7c66b;
+}
+
+.zener-back {
+  width: 100%;
+  height: 100%;
+  display: block;
 }
 
 .card__back-pattern {

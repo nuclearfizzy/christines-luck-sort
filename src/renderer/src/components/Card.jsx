@@ -1,5 +1,6 @@
 import { SUITS } from '../game/deck'
 import ZenerGlyph from './ZenerGlyph'
+import ZenerBack from './ZenerBack'
 
 // Quick lookup so we can find a suit's symbol/color from its key.
 const suitMeta = Object.fromEntries(SUITS.map((suit) => [suit.key, suit]))
@@ -30,8 +31,8 @@ export default function Card({ card, faceUp = false, correct = null, small = fal
   return (
     <div className={classes}>
       <div className={`card__inner ${faceUp ? 'is-faceup' : ''}`}>
-        <div className="card__face card__back">
-          <div className="card__back-pattern" />
+        <div className={`card__face card__back ${isZener ? 'card__back--zener' : ''}`}>
+          {isZener ? <ZenerBack /> : <div className="card__back-pattern" />}
         </div>
         <div className={frontClass}>
           {isZener ? (
