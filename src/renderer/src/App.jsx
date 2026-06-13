@@ -12,6 +12,7 @@ const THEME_KEY = 'cls-theme'
 
 const WIN_THRESHOLD = 14 // beating the ~13 average counts as a "win"
 const HISTORY_MAX = 12 // how many recent games to remember
+const PILE_LIMIT = TOTAL_CARDS / SUITS.length // 13 — a full suit; piles can't exceed it
 
 // Start every suit pile as an empty list.
 function emptyPiles() {
@@ -84,17 +85,17 @@ export default function App() {
   const allPlaced = deck.length === 0
 
   // Place the top (face-down) card onto the chosen suit pile.
+  // A pile holds at most 13 cards (one full suit) — once full, it's locked.
   const placeOn = useCallback(
     (suitKey) => {
       if (phase !== 'placing') return
-      setDeck((prevDeck) => {
-        if (prevDeck.length === 0) return prevDeck
-        const [top, ...rest] = prevDeck
-        setPiles((prevPiles) => ({ ...prevPiles, [suitKey]: [...prevPiles[suitKey], top] }))
-        return rest
-      })
+      if (deck.length === 0) return
+      if (piles[suitKey].length >= PILE_LIMIT) return // pile is full
+      const [top, ...rest] = deck
+      setPiles((prev) => ({ ...prev, [suitKey]: [...prev[suitKey], top] }))
+      setDeck(rest)
     },
-    [phase]
+    [phase, deck, piles]
   )
 
   const score = useMemo(() => scorePiles(piles), [piles])
@@ -236,21 +237,32 @@ export default function App() {
             </section>
 
             <section className="piles">
-              {SUITS.map((suit, i) => (
-                <motion.button
-                  key={suit.key}
-                  className={`pile pile--${suit.color}`}
-                  onClick={() => placeOn(suit.key)}
-                  disabled={allPlaced}
-                  whileHover={allPlaced ? {} : { scale: 1.03, y: -4 }}
-                  whileTap={allPlaced ? {} : { scale: 0.98 }}
-                >
-                  <span className="pile__symbol">{suit.symbol}</span>
-                  <span className="pile__label">{suit.label}</span>
-                  <span className="pile__count">{piles[suit.key].length}</span>
-                  <span className="pile__key">{i + 1}</span>
-                </motion.button>
-              ))}
+              {SUITS.map((suit, i) => {
+                const count = piles[suit.key].length
+                const full = count >= PILE_LIMIT
+                const locked = allPlaced || full
+                return (
+                  <motion.button
+                    key={suit.key}
+                    className={`pile pile--${suit.color} ${full ? 'pile--full' : ''}`}
+                    onClick={() => placeOn(suit.key)}
+                    disabled={locked}
+                    whileHover={locked ? {} : { scale: 1.03, y: -4 }}
+                    whileTap={locked ? {} : { scale: 0.98 }}
+                  >
+                    <span className="pile__symbol">{suit.symbol}</span>
+                    <span className="pile__label">{suit.label}</span>
+                    <span className="pile__count">
+                      {count}/{PILE_LIMIT}
+                    </span>
+                    {full ? (
+                      <span className="pile__full">Full ✓</span>
+                    ) : (
+                      <span className="pile__key">{i + 1}</span>
+                    )}
+                  </motion.button>
+                )
+              })}
             </section>
           </motion.main>
         ) : (
