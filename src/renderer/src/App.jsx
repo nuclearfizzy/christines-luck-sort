@@ -1,7 +1,17 @@
 import { useEffect, useMemo, useState, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { SUITS, TOTAL_CARDS, createDeck, shuffle, seededShuffle, scorePiles } from './game/deck'
+import {
+  SUITS,
+  TOTAL_CARDS,
+  createDeck,
+  shuffle,
+  seededShuffle,
+  scorePiles,
+  ZENER_SYMBOLS,
+  createZenerDeck
+} from './game/deck'
 import Card from './components/Card'
+import ZenerGlyph from './components/ZenerGlyph'
 
 // localStorage keys — where we remember things between sessions.
 const BEST_KEY = 'cls-best-score'
@@ -10,13 +20,27 @@ const BEST_STREAK_KEY = 'cls-best-streak'
 const HISTORY_KEY = 'cls-history'
 const THEME_KEY = 'cls-theme'
 const DAILY_KEY = 'cls-daily'
+const ZENER_BEST_KEY = 'cls-zener-best'
 
-const WIN_THRESHOLD = 14 // beating the ~13 average counts as a "win"
+const WIN_THRESHOLD = 14 // beating the ~13 average counts as a "win" (Classic)
 const HISTORY_MAX = 12 // how many recent games to remember
-const PILE_LIMIT = TOTAL_CARDS / SUITS.length // 13 — a full suit; piles can't exceed it
 
 // Look up a suit's metadata (symbol / colour) by its key.
 const suitMeta = Object.fromEntries(SUITS.map((s) => [s.key, s]))
+
+// Per-mode configuration: which categories (piles) the deck uses, how many
+// cards total, and the per-pile cap. Everything else is shared.
+function configFor(mode) {
+  if (mode === 'zener') {
+    return { kind: 'zener', categories: ZENER_SYMBOLS, total: 25, perCategory: 5 }
+  }
+  return {
+    kind: 'standard',
+    categories: SUITS,
+    total: TOTAL_CARDS,
+    perCategory: TOTAL_CARDS / SUITS.length
+  }
+}
 
 // --- Date helpers (used by the Daily Challenge) ------------------------------
 function todayKey() {
@@ -28,9 +52,9 @@ function todayLabel() {
   return new Date().toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })
 }
 
-// Start every suit pile as an empty list.
-function emptyPiles() {
-  return SUITS.reduce((acc, suit) => ({ ...acc, [suit.key]: [] }), {})
+// Start every category pile as an empty list.
+function emptyPiles(categories) {
+  return categories.reduce((acc, cat) => ({ ...acc, [cat.key]: [] }), {})
 }
 
 // Read a saved number (falls back to 0).
@@ -59,19 +83,20 @@ function readDaily() {
   return { date: todayKey(), best: 0, plays: 0 }
 }
 
-// A little encouraging message based on how lucky you were.
-function verdict(score) {
-  if (score === TOTAL_CARDS) return { emoji: '🤯', text: 'A FLAWLESS deck?! That should be statistically impossible. Are you a wizard?' }
-  if (score >= 30) return { emoji: '🌟', text: 'Astonishing luck — the cards adore you!' }
-  if (score >= 20) return { emoji: '🍀', text: 'Wonderfully lucky — well above average!' }
-  if (score >= WIN_THRESHOLD) return { emoji: '✨', text: 'A touch better than average. Nicely done!' }
-  if (score >= 11) return { emoji: '🙂', text: 'Right around the expected average of 13. The math holds!' }
-  if (score >= 6) return { emoji: '🎲', text: 'A little unlucky this round — give it another shuffle!' }
-  return { emoji: '😅', text: 'Ouch! The deck was not on your side. Try again!' }
+// An encouraging message based on how you did, relative to pure chance.
+function verdict(score, total, avg) {
+  if (score === total) return { emoji: '🤯', text: 'A FLAWLESS run?! That should be statistically impossible. Are you a wizard?' }
+  if (score >= avg * 2.2) return { emoji: '🌟', text: 'Astonishing — far beyond chance. The cards adore you!' }
+  if (score >= avg * 1.5) return { emoji: '🍀', text: 'Well above average — seriously lucky!' }
+  if (score > avg) return { emoji: '✨', text: 'A touch above average. Nicely done!' }
+  if (score >= Math.ceil(avg * 0.8)) return { emoji: '🙂', text: `Right around chance (${avg}). The math holds!` }
+  if (score >= Math.ceil(avg * 0.4)) return { emoji: '🎲', text: 'A little below chance this round — try again!' }
+  return { emoji: '😅', text: 'Below chance — the cards weren’t with you. Another go?' }
 }
 
-// Build a deck for the chosen mode (daily uses the date-seeded shuffle).
+// Build a deck for the chosen mode.
 function makeDeck(mode) {
+  if (mode === 'zener') return shuffle(createZenerDeck())
   if (mode === 'daily') return seededShuffle(createDeck(), `daily-${todayKey()}`)
   return shuffle(createDeck())
 }
@@ -81,19 +106,25 @@ const MODES = [
     key: 'classic',
     icon: '🍀',
     name: 'Classic',
-    desc: 'Pure luck. Sort the deck blind and chase your best streak.'
+    desc: 'Pure luck. Sort the 52-card deck blind and chase your best streak.'
   },
   {
     key: 'hint',
     icon: '👁️',
     name: 'Hint Mode',
-    desc: "See each card's colour before you place it. Practice — doesn't affect your streak."
+    desc: "See each card's colour before placing — it can only go on a matching pile. Practice only."
   },
   {
     key: 'daily',
     icon: '📅',
     name: 'Daily Challenge',
     desc: 'Everyone gets the same deck today. Beat it and share your score!'
+  },
+  {
+    key: 'zener',
+    icon: '🔮',
+    name: 'Zener ESP Test',
+    desc: 'The classic ESP experiment: guess the symbol on 25 cards. Chance is 5/25 — can you beat it?'
   }
 ]
 
@@ -101,7 +132,7 @@ export default function App() {
   const [view, setView] = useState('menu') // 'menu' | 'placing' | 'revealed'
   const [mode, setMode] = useState('classic')
   const [deck, setDeck] = useState([])
-  const [piles, setPiles] = useState(emptyPiles())
+  const [piles, setPiles] = useState({})
   const [lastResult, setLastResult] = useState(null)
 
   // Persisted Classic stats.
@@ -110,11 +141,14 @@ export default function App() {
   const [bestStreak, setBestStreak] = useState(() => readNumber(BEST_STREAK_KEY))
   const [history, setHistory] = useState(() => readHistory())
 
-  // Persisted Daily Challenge record for today.
+  // Persisted Daily + Zener records.
   const [daily, setDaily] = useState(() => readDaily())
+  const [zenerBest, setZenerBest] = useState(() => readNumber(ZENER_BEST_KEY))
 
   // Theme ('dark' | 'light'), remembered between sessions.
   const [theme, setTheme] = useState(() => localStorage.getItem(THEME_KEY) || 'dark')
+
+  const config = useMemo(() => configFor(mode), [mode])
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme)
@@ -127,9 +161,10 @@ export default function App() {
 
   // Start a fresh game in the given mode.
   const startGame = useCallback((nextMode) => {
+    const cfg = configFor(nextMode)
     setMode(nextMode)
     setDeck(makeDeck(nextMode))
-    setPiles(emptyPiles())
+    setPiles(emptyPiles(cfg.categories))
     setLastResult(null)
     setView('placing')
   }, [])
@@ -142,33 +177,34 @@ export default function App() {
     setDaily(readDaily()) // refresh in case the date rolled over
   }, [])
 
-  const placed = TOTAL_CARDS - deck.length
+  const placed = config.total - deck.length
   const currentCard = deck[0] ?? null
   const allPlaced = deck.length === 0 && view === 'placing'
-  const currentColor = currentCard ? suitMeta[currentCard.suit].color : null
+  const currentColor = currentCard && currentCard.suit ? suitMeta[currentCard.suit].color : null
 
-  // Place the top (face-down) card onto the chosen suit pile.
-  // A pile holds at most 13 cards (one full suit) — once full, it's locked.
+  // Place the top (face-down) card onto the chosen category pile.
+  // A pile holds at most `perCategory` cards — once full, it's locked.
   const placeOn = useCallback(
-    (suitKey) => {
+    (catKey) => {
       if (view !== 'placing') return
       if (deck.length === 0) return
-      if (piles[suitKey].length >= PILE_LIMIT) return // pile is full
+      if ((piles[catKey]?.length ?? 0) >= config.perCategory) return // pile is full
       // In Hint Mode the colour is known, so a card can only go on a pile of
       // its own colour (red -> ♥/♦, black -> ♠/♣).
-      if (mode === 'hint' && suitMeta[deck[0].suit].color !== suitMeta[suitKey].color) return
+      if (mode === 'hint' && suitMeta[deck[0].suit].color !== suitMeta[catKey].color) return
       const [top, ...rest] = deck
-      setPiles((prev) => ({ ...prev, [suitKey]: [...prev[suitKey], top] }))
+      setPiles((prev) => ({ ...prev, [catKey]: [...prev[catKey], top] }))
       setDeck(rest)
     },
-    [view, deck, piles, mode]
+    [view, deck, piles, mode, config]
   )
 
   // Reveal & record the round (everything computed once, here in the handler).
   const reveal = useCallback(() => {
-    const score = scorePiles(piles)
+    const score = scorePiles(piles, config.categories)
+    const avg = config.total / config.categories.length
     const won = score >= WIN_THRESHOLD
-    const result = { score, mode, won }
+    const result = { score, mode, total: config.total, avg }
 
     if (mode === 'classic') {
       const nextStreak = won ? currentStreak + 1 : 0
@@ -186,6 +222,7 @@ export default function App() {
       localStorage.setItem(HISTORY_KEY, JSON.stringify(nextHistory))
 
       result.isClassicBest = score >= bestScore && score > 0
+      result.won = won
       result.streak = nextStreak
       result.bestStreak = nextBestStreak
       result.history = nextHistory
@@ -196,19 +233,27 @@ export default function App() {
       localStorage.setItem(DAILY_KEY, JSON.stringify(nextDaily))
       result.dailyBest = nextDaily.best
       result.dateKey = todayKey()
+    } else if (mode === 'zener') {
+      result.isZenerBest = score > zenerBest
+      const nextBest = Math.max(zenerBest, score)
+      setZenerBest(nextBest)
+      localStorage.setItem(ZENER_BEST_KEY, String(nextBest))
+      result.zenerBest = nextBest
     }
     // Hint mode is practice: nothing is persisted.
 
     setLastResult(result)
     setView('revealed')
-  }, [piles, mode, bestScore, currentStreak, bestStreak, history, daily])
+  }, [piles, mode, config, bestScore, currentStreak, bestStreak, history, daily, zenerBest])
 
-  // Keyboard shortcuts: 1–4 place cards, Enter reveals / plays again.
+  // Keyboard shortcuts: number keys place cards, Enter reveals / plays again.
   useEffect(() => {
     function onKey(e) {
       if (view === 'placing') {
-        const index = ['1', '2', '3', '4'].indexOf(e.key)
-        if (index !== -1) placeOn(SUITS[index].key)
+        if (/^[1-9]$/.test(e.key)) {
+          const idx = Number(e.key) - 1
+          if (idx < config.categories.length) placeOn(config.categories[idx].key)
+        }
         if (e.key === 'Enter' && allPlaced) reveal()
       } else if (view === 'revealed' && e.key === 'Enter') {
         playAgain()
@@ -216,7 +261,7 @@ export default function App() {
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [view, allPlaced, placeOn, reveal, playAgain])
+  }, [view, allPlaced, placeOn, reveal, playAgain, config])
 
   return (
     <div className="app">
@@ -282,6 +327,9 @@ export default function App() {
                       {daily.plays > 0 ? `Today's best: ${daily.best}/52` : 'Not played today'}
                     </span>
                   )}
+                  {m.key === 'zener' && zenerBest > 0 && (
+                    <span className="mode-card__tag">Your best: {zenerBest}/25</span>
+                  )}
                 </motion.button>
               ))}
             </div>
@@ -298,21 +346,19 @@ export default function App() {
             transition={{ duration: 0.3 }}
           >
             <ModeBanner mode={mode} />
-            <p className="hint">
-              {mode === 'hint'
-                ? 'You can see each card’s colour — so it can only go on a matching-colour pile. Pick which of the two suits is right!'
-                : 'No peeking! Guess each card’s suit and place it on a pile. Beat the average (14+) to build a streak. 🔥'}
-            </p>
+            <p className="hint">{hintText(mode)}</p>
 
             <div className="progress">
               <div className="progress__bar">
                 <motion.div
                   className="progress__fill"
-                  animate={{ width: `${(placed / TOTAL_CARDS) * 100}%` }}
+                  animate={{ width: `${(placed / config.total) * 100}%` }}
                   transition={{ type: 'spring', stiffness: 120, damping: 20 }}
                 />
               </div>
-              <span className="progress__label">{placed} / {TOTAL_CARDS} placed</span>
+              <span className="progress__label">
+                {placed} / {config.total} placed
+              </span>
             </div>
 
             <section className="deck-zone">
@@ -354,7 +400,7 @@ export default function App() {
                   initial={{ scale: 0.9, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
                 >
-                  <p>All 52 cards are placed!</p>
+                  <p>All {config.total} cards are placed!</p>
                   <motion.button
                     className="btn btn--primary btn--big"
                     onClick={reveal}
@@ -367,28 +413,32 @@ export default function App() {
               )}
             </section>
 
-            <section className="piles">
-              {SUITS.map((suit, i) => {
-                const count = piles[suit.key].length
-                const full = count >= PILE_LIMIT
-                // In Hint Mode, piles of the wrong colour for the current card are off-limits.
-                const colorBlocked = mode === 'hint' && currentColor && suit.color !== currentColor
+            <section
+              className="piles"
+              style={{ gridTemplateColumns: `repeat(${config.categories.length}, 1fr)` }}
+            >
+              {config.categories.map((cat, i) => {
+                const count = piles[cat.key]?.length ?? 0
+                const full = count >= config.perCategory
+                const colorBlocked = mode === 'hint' && currentColor && cat.color !== currentColor
                 const locked = allPlaced || full || colorBlocked
                 return (
                   <motion.button
-                    key={suit.key}
-                    className={`pile pile--${suit.color} ${full ? 'pile--full' : ''} ${
+                    key={cat.key}
+                    className={`pile pile--${cat.color || 'zener'} ${full ? 'pile--full' : ''} ${
                       colorBlocked ? 'pile--blocked' : ''
                     }`}
-                    onClick={() => placeOn(suit.key)}
+                    onClick={() => placeOn(cat.key)}
                     disabled={locked}
                     whileHover={locked ? {} : { scale: 1.03, y: -4 }}
                     whileTap={locked ? {} : { scale: 0.98 }}
                   >
-                    <span className="pile__symbol">{suit.symbol}</span>
-                    <span className="pile__label">{suit.label}</span>
+                    <span className="pile__symbol">
+                      {config.kind === 'zener' ? <ZenerGlyph symbol={cat.key} size={38} /> : cat.symbol}
+                    </span>
+                    <span className="pile__label">{cat.label}</span>
                     <span className="pile__count">
-                      {count}/{PILE_LIMIT}
+                      {count}/{config.perCategory}
                     </span>
                     {full ? (
                       <span className="pile__full">Full ✓</span>
@@ -419,6 +469,15 @@ export default function App() {
   )
 }
 
+// Instructions for the current mode.
+function hintText(mode) {
+  if (mode === 'hint')
+    return 'You can see each card’s colour — so it can only go on a matching-colour pile. Pick which of the two suits is right!'
+  if (mode === 'zener')
+    return 'Focus… then guess the symbol on each face-down card and place it. Pure chance is 5 out of 25.'
+  return 'No peeking! Guess each card’s suit and place it on a pile. Beat the average (14+) to build a streak. 🔥'
+}
+
 // A small banner naming the current mode (and date, for the daily).
 function ModeBanner({ mode }) {
   const info = MODES.find((m) => m.key === mode)
@@ -437,10 +496,11 @@ function Results({ result, piles, onPlayAgain, onMenu }) {
   const [copied, setCopied] = useState(false)
   if (!result) return null
 
-  const { score, mode } = result
-  const { emoji, text } = verdict(score)
+  const { score, mode, total, avg } = result
+  const config = configFor(mode)
+  const { emoji, text } = verdict(score, total, avg)
 
-  const shareText = `🍀 Christine's Luck Sort — Daily ${result.dateKey}: ${score}/${TOTAL_CARDS} correct!`
+  const shareText = `🍀 Christine's Luck Sort — Daily ${result.dateKey}: ${score}/${total} correct!`
   function copyResult() {
     if (window.api?.copyToClipboard) window.api.copyToClipboard(shareText)
     else if (navigator.clipboard) navigator.clipboard.writeText(shareText)
@@ -458,7 +518,7 @@ function Results({ result, piles, onPlayAgain, onMenu }) {
         <span className="scoreboard__emoji">{emoji}</span>
         <div className="scoreboard__score">
           <span className="scoreboard__big">{score}</span>
-          <span className="scoreboard__total">/ {TOTAL_CARDS} correct</span>
+          <span className="scoreboard__total">/ {total} correct</span>
         </div>
         <div className="scoreboard__badges">
           {result.isClassicBest && <span className="scoreboard__badge">New best score! 🎉</span>}
@@ -468,7 +528,10 @@ function Results({ result, piles, onPlayAgain, onMenu }) {
             </span>
           )}
           {result.isDailyBest && <span className="scoreboard__badge">New daily best! 📅</span>}
-          {mode === 'hint' && <span className="scoreboard__badge scoreboard__badge--muted">Practice round</span>}
+          {result.isZenerBest && <span className="scoreboard__badge">New ESP best! 🔮</span>}
+          {mode === 'hint' && (
+            <span className="scoreboard__badge scoreboard__badge--muted">Practice round</span>
+          )}
         </div>
         <p className="scoreboard__verdict">{text}</p>
       </motion.div>
@@ -485,11 +548,24 @@ function Results({ result, piles, onPlayAgain, onMenu }) {
         <div className="daily-panel">
           <div className="daily-panel__row">
             <span>📅 Daily Challenge · {todayLabel()}</span>
-            <span className="daily-panel__best">Today&rsquo;s best: {result.dailyBest}/{TOTAL_CARDS}</span>
+            <span className="daily-panel__best">
+              Today&rsquo;s best: {result.dailyBest}/{total}
+            </span>
           </div>
           <button className="btn btn--ghost" onClick={copyResult}>
             {copied ? 'Copied! 📋' : 'Copy result to share'}
           </button>
+        </div>
+      )}
+
+      {mode === 'zener' && (
+        <div className="daily-panel">
+          <div className="daily-panel__row">
+            <span>🔮 ESP Test · pure chance averages {avg}/{total}</span>
+            <span className="daily-panel__best">
+              Your best: {result.zenerBest}/{total}
+            </span>
+          </div>
         </div>
       )}
 
@@ -499,15 +575,20 @@ function Results({ result, piles, onPlayAgain, onMenu }) {
         </p>
       )}
 
-      <div className="result-piles">
-        {SUITS.map((suit) => {
-          const cards = piles[suit.key]
-          const correct = cards.filter((c) => c.suit === suit.key).length
+      <div
+        className="result-piles"
+        style={{ gridTemplateColumns: `repeat(${config.categories.length}, 1fr)` }}
+      >
+        {config.categories.map((cat) => {
+          const cards = piles[cat.key] || []
+          const correct = cards.filter((c) => c.group === cat.key).length
           return (
-            <div key={suit.key} className={`result-pile result-pile--${suit.color}`}>
+            <div key={cat.key} className={`result-pile result-pile--${cat.color || 'zener'}`}>
               <header className="result-pile__head">
-                <span className="result-pile__symbol">{suit.symbol}</span>
-                <span className="result-pile__label">{suit.label}</span>
+                <span className="result-pile__symbol">
+                  {config.kind === 'zener' ? <ZenerGlyph symbol={cat.key} size={22} /> : cat.symbol}
+                </span>
+                <span className="result-pile__label">{cat.label}</span>
                 <span className="result-pile__score">
                   {correct}/{cards.length} correct
                 </span>
@@ -521,7 +602,7 @@ function Results({ result, piles, onPlayAgain, onMenu }) {
                     transition={{ delay: idx * 0.012, duration: 0.25 }}
                     style={{ zIndex: idx }}
                   >
-                    <Card card={card} faceUp correct={card.suit === suit.key} small />
+                    <Card card={card} faceUp correct={card.group === cat.key} small />
                   </motion.div>
                 ))}
               </div>

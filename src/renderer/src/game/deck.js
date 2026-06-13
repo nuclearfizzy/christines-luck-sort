@@ -17,7 +17,7 @@ export function createDeck() {
   const deck = []
   for (const suit of SUITS) {
     for (const rank of RANKS) {
-      deck.push({ id: `${rank}-${suit.key}`, rank, suit: suit.key })
+      deck.push({ id: `${rank}-${suit.key}`, rank, suit: suit.key, group: suit.key })
     }
   }
   return deck
@@ -61,10 +61,35 @@ export function seededShuffle(deck, seedString) {
   return shuffle(deck, mulberry32(hashString(seedString)))
 }
 
-// Count how many cards landed on the pile matching their true suit.
-export function scorePiles(piles) {
-  return SUITS.reduce((total, suit) => {
-    const correctHere = piles[suit.key].filter((card) => card.suit === suit.key).length
+// --- Zener (ESP) cards -------------------------------------------------------
+// The classic parapsychology deck: 5 symbols, 5 of each = 25 cards.
+// Guessing blind, pure chance averages 5 correct out of 25.
+export const ZENER_SYMBOLS = [
+  { key: 'circle', label: 'Circle' },
+  { key: 'cross', label: 'Cross' },
+  { key: 'waves', label: 'Waves' },
+  { key: 'square', label: 'Square' },
+  { key: 'star', label: 'Star' }
+]
+export const ZENER_PER_SYMBOL = 5
+export const ZENER_TOTAL = ZENER_SYMBOLS.length * ZENER_PER_SYMBOL // 25
+
+export function createZenerDeck() {
+  const deck = []
+  for (const sym of ZENER_SYMBOLS) {
+    for (let i = 0; i < ZENER_PER_SYMBOL; i++) {
+      deck.push({ id: `${sym.key}-${i}`, symbol: sym.key, group: sym.key })
+    }
+  }
+  return deck
+}
+
+// Count how many cards landed on the pile matching their own category.
+// Each card carries a `group` key; each pile is keyed by a category key.
+// Works for both playing-card suits and Zener symbols.
+export function scorePiles(piles, categories = SUITS) {
+  return categories.reduce((total, cat) => {
+    const correctHere = piles[cat.key].filter((card) => card.group === cat.key).length
     return total + correctHere
   }, 0)
 }

@@ -399,6 +399,17 @@ body {
   color: var(--card-red);
 }
 
+/* Zener (ESP) card front — a single centered symbol in deep slate. */
+.card__front.is-zener {
+  color: #2a3350;
+}
+
+.card__zener {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .card__corner {
   position: absolute;
   display: flex;
@@ -528,6 +539,14 @@ body {
 
 .pile--black .pile__symbol {
   color: var(--suit-black);
+}
+
+.pile--zener .pile__symbol {
+  color: var(--accent);
+}
+
+.pile__symbol svg {
+  display: block;
 }
 
 .pile__label {
@@ -749,6 +768,7 @@ body {
 
 .result-pile--red .result-pile__symbol { color: var(--suit-red); }
 .result-pile--black .result-pile__symbol { color: var(--suit-black); }
+.result-pile--zener .result-pile__symbol { color: var(--accent); display: flex; }
 
 .result-pile__label {
   font-weight: 600;
@@ -791,9 +811,9 @@ body {
 
 .menu__modes {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 20px;
-  width: min(880px, 94%);
+  width: min(1000px, 95%);
 }
 
 .mode-card {

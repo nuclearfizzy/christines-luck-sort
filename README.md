@@ -21,6 +21,7 @@ You can also use your keyboard: **1** = Spades, **2** = Hearts, **3** = Diamonds
 - **🍀 Classic** — pure luck. Sort the deck blind and build your win streak.
 - **👁️ Hint Mode** — see each card's colour (red/black) before placing it, for a 50/50 guess with real strategy. Practice only, so it doesn't affect your streak.
 - **📅 Daily Challenge** — everyone gets the *same* shuffled deck each day (it's seeded by the date), so you can compare scores with friends. Copy your result to share it!
+- **🔮 Zener ESP Test** — the classic parapsychology experiment. Guess the symbol (circle, cross, waves, square, star) on each of 25 cards. Pure chance averages 5/25 — beat it and spook your friends.
 
 ## Running it on your computer
 
