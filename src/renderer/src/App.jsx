@@ -12,6 +12,7 @@ import {
 } from './game/deck'
 import Card from './components/Card'
 import ZenerGlyph from './components/ZenerGlyph'
+import Icon from './components/Icon'
 
 // localStorage keys — where we remember things between sessions.
 const BEST_KEY = 'cls-best-score'
@@ -85,13 +86,13 @@ function readDaily() {
 
 // An encouraging message based on how you did, relative to pure chance.
 function verdict(score, total, avg) {
-  if (score === total) return { emoji: '🤯', text: 'A FLAWLESS run?! That should be statistically impossible. Are you a wizard?' }
-  if (score >= avg * 2.2) return { emoji: '🌟', text: 'Astonishing — far beyond chance. The cards adore you!' }
-  if (score >= avg * 1.5) return { emoji: '🍀', text: 'Well above average — seriously lucky!' }
-  if (score > avg) return { emoji: '✨', text: 'A touch above average. Nicely done!' }
-  if (score >= Math.ceil(avg * 0.8)) return { emoji: '🙂', text: `Right around chance (${avg}). The math holds!` }
-  if (score >= Math.ceil(avg * 0.4)) return { emoji: '🎲', text: 'A little below chance this round — try again!' }
-  return { emoji: '😅', text: 'Below chance — the cards weren’t with you. Another go?' }
+  if (score === total) return { icon: 'burst', text: 'A FLAWLESS run?! That should be statistically impossible. Are you a wizard?' }
+  if (score >= avg * 2.2) return { icon: 'star', text: 'Astonishing — far beyond chance. The cards adore you!' }
+  if (score >= avg * 1.5) return { icon: 'clover', text: 'Well above average — seriously lucky!' }
+  if (score > avg) return { icon: 'sparkles', text: 'A touch above average. Nicely done!' }
+  if (score >= Math.ceil(avg * 0.8)) return { icon: 'smile', text: `Right around chance (${avg}). The math holds!` }
+  if (score >= Math.ceil(avg * 0.4)) return { icon: 'dice', text: 'A little below chance this round — try again!' }
+  return { icon: 'frown', text: 'Below chance — the cards weren’t with you. Another go?' }
 }
 
 // Build a deck for the chosen mode.
@@ -104,25 +105,25 @@ function makeDeck(mode) {
 const MODES = [
   {
     key: 'classic',
-    icon: '🍀',
+    icon: 'clover',
     name: 'Classic',
     desc: 'Pure luck. Sort the 52-card deck blind and chase your best streak.'
   },
   {
     key: 'hint',
-    icon: '👁️',
+    icon: 'eye',
     name: 'Hint Mode',
     desc: "See each card's colour before placing — it can only go on a matching pile. Practice only."
   },
   {
     key: 'daily',
-    icon: '📅',
+    icon: 'calendar',
     name: 'Daily Challenge',
     desc: 'Everyone gets the same deck today. Beat it and share your score!'
   },
   {
     key: 'zener',
-    icon: '🔮',
+    icon: 'crystal',
     name: 'Zener ESP Test',
     desc: 'The classic ESP experiment: guess the symbol on 25 cards. Chance is 5/25 — can you beat it?'
   }
@@ -267,13 +268,23 @@ export default function App() {
     <div className="app">
       <header className="topbar">
         <button className="brand brand--button" onClick={backToMenu} title="Back to menu">
-          <span className="brand__leaf">🍀</span>
+          <span className="brand__leaf">
+            <Icon name="clover" size={26} />
+          </span>
           <h1 className="brand__title">Christine&rsquo;s Luck Sort</h1>
         </button>
         <div className="topbar__right">
           <div className="stat">
             <span className="stat__label">Streak</span>
-            <span className="stat__value">{currentStreak > 0 ? `🔥 ${currentStreak}` : '—'}</span>
+            <span className="stat__value">
+              {currentStreak > 0 ? (
+                <>
+                  <Icon name="fire" size={16} /> {currentStreak}
+                </>
+              ) : (
+                '—'
+              )}
+            </span>
           </div>
           <div className="stat">
             <span className="stat__label">Best</span>
@@ -286,14 +297,14 @@ export default function App() {
             title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} theme`}
           >
             <span className="theme-toggle__track">
-              <span>🌙</span>
-              <span>☀️</span>
+              <Icon name="moon" size={13} />
+              <Icon name="sun" size={13} />
             </span>
             <span className="theme-toggle__thumb" />
           </button>
           {view !== 'menu' && (
-            <button className="btn btn--ghost" onClick={backToMenu}>
-              ☰ Menu
+            <button className="btn btn--ghost btn--icon" onClick={backToMenu}>
+              <Icon name="menu" size={16} /> Menu
             </button>
           )}
         </div>
@@ -319,7 +330,9 @@ export default function App() {
                   whileHover={{ scale: 1.04, y: -5 }}
                   whileTap={{ scale: 0.98 }}
                 >
-                  <span className="mode-card__icon">{m.icon}</span>
+                  <span className="mode-card__icon">
+                    <Icon name={m.icon} size={42} />
+                  </span>
                   <span className="mode-card__name">{m.name}</span>
                   <span className="mode-card__desc">{m.desc}</span>
                   {m.key === 'daily' && (
@@ -407,7 +420,7 @@ export default function App() {
                     whileHover={{ scale: 1.04 }}
                     whileTap={{ scale: 0.97 }}
                   >
-                    Reveal the cards ✨
+                    Reveal the cards <Icon name="sparkles" size={18} />
                   </motion.button>
                 </motion.div>
               )}
@@ -441,7 +454,7 @@ export default function App() {
                       {count}/{config.perCategory}
                     </span>
                     {full ? (
-                      <span className="pile__full">Full ✓</span>
+                      <span className="pile__full">Full</span>
                     ) : (
                       <span className="pile__key">{i + 1}</span>
                     )}
@@ -475,7 +488,7 @@ function hintText(mode) {
     return 'You can see each card’s colour — so it can only go on a matching-colour pile. Pick which of the two suits is right!'
   if (mode === 'zener')
     return 'Focus… then guess the symbol on each face-down card and place it. Pure chance is 5 out of 25.'
-  return 'No peeking! Guess each card’s suit and place it on a pile. Beat the average (14+) to build a streak. 🔥'
+  return 'No peeking! Guess each card’s suit and place it on a pile. Beat the average (14+) to build a streak.'
 }
 
 // A small banner naming the current mode (and date, for the daily).
@@ -484,7 +497,7 @@ function ModeBanner({ mode }) {
   if (!info) return null
   return (
     <div className={`mode-banner mode-banner--${mode}`}>
-      <span>{info.icon}</span>
+      <Icon name={info.icon} size={18} />
       <span>{info.name}</span>
       {mode === 'daily' && <span className="mode-banner__date">· {todayLabel()}</span>}
     </div>
@@ -498,9 +511,9 @@ function Results({ result, piles, onPlayAgain, onMenu }) {
 
   const { score, mode, total, avg } = result
   const config = configFor(mode)
-  const { emoji, text } = verdict(score, total, avg)
+  const { icon, text } = verdict(score, total, avg)
 
-  const shareText = `🍀 Christine's Luck Sort — Daily ${result.dateKey}: ${score}/${total} correct!`
+  const shareText = `Christine's Luck Sort — Daily ${result.dateKey}: ${score}/${total} correct!`
   function copyResult() {
     if (window.api?.copyToClipboard) window.api.copyToClipboard(shareText)
     else if (navigator.clipboard) navigator.clipboard.writeText(shareText)
@@ -515,20 +528,34 @@ function Results({ result, piles, onPlayAgain, onMenu }) {
         animate={{ scale: 1, opacity: 1 }}
         transition={{ type: 'spring', stiffness: 140, damping: 14 }}
       >
-        <span className="scoreboard__emoji">{emoji}</span>
+        <span className="scoreboard__emoji">
+          <Icon name={icon} size={46} />
+        </span>
         <div className="scoreboard__score">
           <span className="scoreboard__big">{score}</span>
           <span className="scoreboard__total">/ {total} correct</span>
         </div>
         <div className="scoreboard__badges">
-          {result.isClassicBest && <span className="scoreboard__badge">New best score! 🎉</span>}
-          {mode === 'classic' && result.won && (
-            <span className="scoreboard__badge scoreboard__badge--streak">
-              🔥 {result.streak} win streak
+          {result.isClassicBest && (
+            <span className="scoreboard__badge">
+              <Icon name="star" size={14} /> New best score
             </span>
           )}
-          {result.isDailyBest && <span className="scoreboard__badge">New daily best! 📅</span>}
-          {result.isZenerBest && <span className="scoreboard__badge">New ESP best! 🔮</span>}
+          {mode === 'classic' && result.won && (
+            <span className="scoreboard__badge scoreboard__badge--streak">
+              <Icon name="fire" size={14} /> {result.streak} win streak
+            </span>
+          )}
+          {result.isDailyBest && (
+            <span className="scoreboard__badge">
+              <Icon name="calendar" size={14} /> New daily best
+            </span>
+          )}
+          {result.isZenerBest && (
+            <span className="scoreboard__badge">
+              <Icon name="crystal" size={14} /> New ESP best
+            </span>
+          )}
           {mode === 'hint' && (
             <span className="scoreboard__badge scoreboard__badge--muted">Practice round</span>
           )}
@@ -547,13 +574,21 @@ function Results({ result, piles, onPlayAgain, onMenu }) {
       {mode === 'daily' && (
         <div className="daily-panel">
           <div className="daily-panel__row">
-            <span>📅 Daily Challenge · {todayLabel()}</span>
+            <span className="daily-panel__title">
+              <Icon name="calendar" size={15} /> Daily Challenge · {todayLabel()}
+            </span>
             <span className="daily-panel__best">
               Today&rsquo;s best: {result.dailyBest}/{total}
             </span>
           </div>
-          <button className="btn btn--ghost" onClick={copyResult}>
-            {copied ? 'Copied! 📋' : 'Copy result to share'}
+          <button className="btn btn--ghost btn--icon" onClick={copyResult}>
+            {copied ? (
+              <>
+                <Icon name="clipboard" size={15} /> Copied!
+              </>
+            ) : (
+              'Copy result to share'
+            )}
           </button>
         </div>
       )}
@@ -561,7 +596,9 @@ function Results({ result, piles, onPlayAgain, onMenu }) {
       {mode === 'zener' && (
         <div className="daily-panel">
           <div className="daily-panel__row">
-            <span>🔮 ESP Test · pure chance averages {avg}/{total}</span>
+            <span className="daily-panel__title">
+              <Icon name="crystal" size={15} /> ESP Test · pure chance averages {avg}/{total}
+            </span>
             <span className="daily-panel__best">
               Your best: {result.zenerBest}/{total}
             </span>
@@ -571,7 +608,8 @@ function Results({ result, piles, onPlayAgain, onMenu }) {
 
       {mode === 'hint' && (
         <p className="practice-note">
-          👁️ Hint Mode is just for practice — your streak and best score weren&rsquo;t affected.
+          <Icon name="eye" size={15} /> Hint Mode is just for practice — your streak and best score
+          weren&rsquo;t affected.
         </p>
       )}
 
@@ -618,10 +656,10 @@ function Results({ result, piles, onPlayAgain, onMenu }) {
           whileHover={{ scale: 1.04 }}
           whileTap={{ scale: 0.97 }}
         >
-          {mode === 'daily' ? 'Try again 🔄' : 'Play again 🔄'}
+          {mode === 'daily' ? 'Try again' : 'Play again'} <Icon name="refresh" size={18} />
         </motion.button>
-        <button className="btn btn--ghost" onClick={onMenu}>
-          ☰ Menu
+        <button className="btn btn--ghost btn--icon" onClick={onMenu}>
+          <Icon name="menu" size={16} /> Menu
         </button>
       </div>
     </>
@@ -634,11 +672,15 @@ function StatsPanel({ currentStreak, bestStreak, history }) {
     <div className="stats-panel">
       <div className="stats-panel__row">
         <div className="streak-card">
-          <span className="streak-card__value">🔥 {currentStreak}</span>
+          <span className="streak-card__value">
+            <Icon name="fire" size={22} /> {currentStreak}
+          </span>
           <span className="streak-card__label">Current streak</span>
         </div>
         <div className="streak-card">
-          <span className="streak-card__value">🏆 {bestStreak}</span>
+          <span className="streak-card__value">
+            <Icon name="trophy" size={22} /> {bestStreak}
+          </span>
           <span className="streak-card__label">Best streak</span>
         </div>
       </div>

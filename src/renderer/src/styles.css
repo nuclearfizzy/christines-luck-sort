@@ -204,6 +204,10 @@ body {
   padding: 10px 20px;
   cursor: pointer;
   transition: background 0.18s, box-shadow 0.18s, transform 0.05s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
 }
 
 .btn--ghost {
@@ -972,6 +976,36 @@ body {
   display: flex;
   align-items: center;
   gap: 14px;
+}
+
+/* ---- SVG icons (used in place of emojis) ---------------------------------- */
+.icon {
+  flex-shrink: 0;
+  vertical-align: -0.15em;
+}
+
+.stat__value,
+.streak-card__value {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.scoreboard__badge,
+.daily-panel__title {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.scoreboard__emoji {
+  color: var(--accent);
+  line-height: 0;
+}
+
+.mode-card__icon,
+.mode-banner > .icon {
+  color: var(--accent);
 }
 
 /* Tidy scrollbar. */
