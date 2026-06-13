@@ -18,16 +18,25 @@ export default function Icon({ name, size = 20, className = '' }) {
   }
 
   switch (name) {
-    case 'clover':
+    case 'clover': {
+      const leaf =
+        'M0,0 C 1.5,-3 4,-4.5 6,-6.5 C 8,-8.5 7.5,-12 4.5,-12 C 2.5,-12 1,-10 0,-8 ' +
+        'C -1,-10 -2.5,-12 -4.5,-12 C -7.5,-12 -8,-8.5 -6,-6.5 C -4,-4.5 -1.5,-3 0,0 Z'
       return (
         <svg {...base} fill="currentColor">
-          <circle cx="12" cy="8" r="3.5" />
-          <circle cx="8" cy="12" r="3.5" />
-          <circle cx="16" cy="12" r="3.5" />
-          <circle cx="12" cy="16" r="3.5" />
-          <rect x="11.4" y="15" width="1.2" height="7" rx="0.6" />
+          {[45, 135, 225, 315].map((a) => (
+            <path key={a} d={leaf} transform={`translate(12,11) rotate(${a}) scale(0.7)`} />
+          ))}
+          <path
+            d="M12 12 C 11 15 11 18 10.5 22"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.6"
+            strokeLinecap="round"
+          />
         </svg>
       )
+    }
     case 'fire':
       return (
         <svg {...base} fill="currentColor">
