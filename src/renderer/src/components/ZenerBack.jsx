@@ -71,19 +71,11 @@ export default function ZenerBack() {
           </pattern>
         )}
 
-        <radialGradient id="zfade" cx={CX} cy={CY} r="40" gradientUnits="userSpaceOnUse">
-          <stop offset="0.71" stopColor="#000" />
-          <stop offset="1" stopColor="#fff" />
-        </radialGradient>
-        <mask id="zlatmask">
-          <rect x="0" y="0" width="120" height="168" fill="#fff" />
-          <rect x="0" y="0" width="120" height="168" fill="url(#zfade)" />
-        </mask>
       </defs>
 
-      {/* Base + tile pattern, faded out around the centre. */}
+      {/* Base + tile pattern across the whole card. */}
       <rect x="0" y="0" width="120" height="168" fill={p.bg} />
-      <rect x="0" y="0" width="120" height="168" fill="url(#zpat)" mask="url(#zlatmask)" />
+      <rect x="0" y="0" width="120" height="168" fill="url(#zpat)" />
 
       {/* Medallion: a solid border ring around a clean disc. */}
       <circle cx={CX} cy={CY} r="28.5" fill={p.main} />
