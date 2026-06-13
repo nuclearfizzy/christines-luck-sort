@@ -64,24 +64,32 @@ export default function Icon({ name, size = 20, className = '' }) {
         </svg>
       )
     case 'spiral': {
-      const arm = (deg) => {
-        const rot = (deg * Math.PI) / 180
+      // Quadskelion: four multi-turn spirals around the centre, tails linking.
+      const spiral = (cx, cy) => {
+        const phase = Math.atan2(12 - cy, 12 - cx)
+        const N = 56
+        const thetaMax = 4 * Math.PI // 2 turns
+        const r0 = 0.4
+        const k = (5.4 - r0) / thetaMax
         const pts = []
-        const N = 24
         for (let i = 0; i <= N; i++) {
-          const t = i / N
-          const theta = t * 4.6
-          const r = 1.4 + 1.45 * theta
-          pts.push(`${(12 + r * Math.cos(theta + rot)).toFixed(2)},${(12 + r * Math.sin(theta + rot)).toFixed(2)}`)
+          const theta = (i / N) * thetaMax
+          const r = r0 + k * theta
+          pts.push(`${(cx + r * Math.cos(theta + phase)).toFixed(2)},${(cy + r * Math.sin(theta + phase)).toFixed(2)}`)
         }
         return 'M' + pts.join(' L')
       }
+      const centers = [
+        [12, 6],
+        [18, 12],
+        [12, 18],
+        [6, 12]
+      ]
       return (
-        <svg {...base} {...line} strokeWidth={1.8}>
-          {[0, 90, 180, 270].map((d) => (
-            <path key={d} d={arm(d)} />
+        <svg {...base} {...line} strokeWidth={1}>
+          {centers.map(([cx, cy], i) => (
+            <path key={i} d={spiral(cx, cy)} />
           ))}
-          <circle cx="12" cy="12" r="1" fill="currentColor" stroke="none" />
         </svg>
       )
     }
